@@ -1,6 +1,8 @@
 import { MdAdd } from "react-icons/md";
 import NoteCard from "../../components/Cards/NoteCard";
 import { useState } from "react";
+import Modal from "react-modal";
+import AddEditNotes from "./AddEditNotes";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -89,6 +91,22 @@ const Home = () => {
       >
         <MdAdd className="text-[32px] text-white" />
       </button>
+
+      <Modal
+        isOpen={openAddEditModal.isShown}
+        onRequestClose={() => {}}
+        style={{ overlay: { backgroundColor: "rgba(0,0,0,0.2)" } }}
+        contentLabel=""
+        className="w-[40%] max-md:w-[60%] max-sm:w-[70%] max-h-3/4 bg-white rounded-md mx-auto mt-14 p-5 overflow-scroll"
+      >
+        <AddEditNotes
+          onClose={() =>
+            setOpenAddEditModal({ isShown: false, type: "add", data: null })
+          }
+          noteData={openAddEditModal.data}
+          type={openAddEditModal.type}
+        />
+      </Modal>
     </>
   );
 };
