@@ -1,6 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
 dotenv.config();
 
@@ -15,9 +17,19 @@ mongoose
 
 const app = express();
 
+// to make input as json
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({ origin: "*" }));
+
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
+
+// import routes
+import authRouter from "./routes/auth.route.js";
+
+app.use("/api/auth", authRouter);
 
 // error handling
 app.use((err, req, res, next) => {
