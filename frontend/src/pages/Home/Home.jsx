@@ -17,6 +17,7 @@ const Home = () => {
 
   const [userInfo, setUserInfo] = useState(null);
   const [allNotes, setAllNotes] = useState([]);
+  const [isSearch, setIsSearch] = useState(false);
 
   const navigate = useNavigate();
 
@@ -79,9 +80,38 @@ const Home = () => {
     }
   };
 
+  const onSearchNote = async (query) => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/note/search", {
+        params: { query },
+        withCredentials: true,
+      });
+
+      if (res.data.success === false) {
+        console.log(res.data.message);
+        toast.error(res.data.message);
+        return;
+      }
+
+      setIsSearch(true);
+      setAllNotes(res.data.notes);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setIsSearch(false);
+    getAllNotes();
+  };
+
   return (
     <>
-      <Navbar userInfo={userInfo} />
+      <Navbar
+        userInfo={userInfo}
+        onSearchNote={onSearchNote}
+        handleClearSearch={handleClearSearch}
+      />
       <div className="container mx-auto">
         {allNotes.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 max-md:m-5">
@@ -106,9 +136,15 @@ const Home = () => {
         ) : (
           <EmptyCard
             imgSrc={
-              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDCtZLuixBFGTqGKdWGLaSKiO3qyhW782aZA&s"
+              isSearch
+                ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtakcQoMFXwFwnlochk9fQSBkNYkO5rSyY9A&s"
+                : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDCtZLuixBFGTqGKdWGLaSKiO3qyhW782aZA&s"
             }
-            message={`Ready to capture your ideas ? Click the 'Add' button to start noting down your thoughts, inspiration and reminders. Let's get started!`}
+            message={
+              isSearch
+                ? "Oops! No Notes found matching your search"
+                : `Ready to capture your ideas ? Click the 'Add' button to start noting down your thoughts, inspiration and reminders. Let's get started!`
+            }
           />
         )}
       </div>

@@ -154,7 +154,7 @@ export const searchNote = async (req, res, next) => {
 
   try {
     const matchingNotes = await Note.find({
-      uerId: req.user.id,
+      userId: req.user.id,
       $or: [
         { title: { $regex: new RegExp(query, "i") } },
         { content: { $regex: new RegExp(query, "i") } },
