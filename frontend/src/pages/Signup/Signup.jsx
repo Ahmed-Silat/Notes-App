@@ -3,6 +3,7 @@ import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -43,13 +44,17 @@ const Signup = () => {
 
       if (res.data.success === false) {
         setEmail(res.data.message);
+        toast.error(res.data.message);
         return;
       }
+
+      toast.success(res.data.message);
 
       setError("");
 
       navigate("/login");
     } catch (error) {
+      toast.error(error.message);
       console.log(error.message);
       setError(error.message);
     }

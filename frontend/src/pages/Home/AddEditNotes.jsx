@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MdClose } from "react-icons/md";
 import TagInput from "../../components/Input/TagInput";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const [title, setTitle] = useState(noteData?.title || "");
@@ -23,12 +24,15 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       if (res.data.success === false) {
         console.log(res.data.message);
         setError(res.data.message);
+        toast.error(res.data.message);
         return;
       }
 
+      toast.success(res.data.message);
       getAllNotes();
       onClose();
     } catch (error) {
+      toast.error(error.message);
       console.log(error.message);
       setError(error.message);
     }
@@ -46,12 +50,15 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       if (res.data.success === false) {
         console.log(res.data.message);
         setError(res.data.message);
+        toast.error(res.data.message);
         return;
       }
 
+      toast.success(res.data.message);
       getAllNotes();
       onClose();
     } catch (error) {
+      toast.error(error.message);
       console.log(error.message);
       setError(error.message);
     }

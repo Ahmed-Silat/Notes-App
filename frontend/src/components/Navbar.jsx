@@ -9,6 +9,7 @@ import {
   signoutSuccess,
 } from "../redux/user/userSlice";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const Navbar = ({ userInfo }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,12 +34,15 @@ const Navbar = ({ userInfo }) => {
 
       if (res.data.success === false) {
         dispatch(signoutFailure(res.data.message));
+        toast.error("res.data.message");
         return;
       }
 
+      toast.success(res.data.message);
       dispatch(signoutSuccess());
       navigate("/login");
     } catch (error) {
+      toast.error(error.message);
       dispatch(signoutFailure(error.message));
     }
   };
