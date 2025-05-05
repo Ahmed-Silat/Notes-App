@@ -5,6 +5,7 @@ import {
   deleteNote,
   editNote,
   getAllNotes,
+  searchNote,
   updateNotePinned,
 } from "../controller/note.controller.js";
 
@@ -15,5 +16,6 @@ router.put("/edit/:noteId", verifyToken, editNote);
 router.get("/all", verifyToken, getAllNotes);
 router.delete("/delete/:noteId", verifyToken, deleteNote);
 router.put("/update-note-pinned/:noteId", verifyToken, updateNotePinned);
+router.get("/search", verifyToken, searchNote);
 
 export default router;
