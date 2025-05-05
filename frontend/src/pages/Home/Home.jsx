@@ -94,6 +94,7 @@ const Home = () => {
           }
           noteData={openAddEditModal.data}
           type={openAddEditModal.type}
+          getAllNotes={getAllNotes}
         />
       </Modal>
     </>
