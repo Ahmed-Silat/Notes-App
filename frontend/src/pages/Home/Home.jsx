@@ -6,6 +6,7 @@ import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
+import axios from "axios";
 
 const Home = () => {
   const { currentUser, loading, errorDispatch } = useSelector(
@@ -13,6 +14,7 @@ const Home = () => {
   );
 
   const [userInfo, setUserInfo] = useState(null);
+  const [allNotes, setAllNotes] = useState([]);
 
   const navigate = useNavigate();
 
@@ -27,79 +29,46 @@ const Home = () => {
       navigate("/login");
     } else {
       setUserInfo(currentUser?.rest);
+      getAllNotes();
     }
   }, []);
+
+  // get all notes
+  const getAllNotes = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/note/all", {
+        withCredentials: true,
+      });
+
+      if (res.data.success === false) {
+        console.log(res.data);
+        return;
+      }
+
+      setAllNotes(res.data.notes);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
       <Navbar userInfo={userInfo} />
       <div className="container mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 max-md:m-5">
-          <NoteCard
-            title={"wakeup at 6 a.m."}
-            date={"5th June, 2021"}
-            content={"You know nothing, Jon Snow"}
-            tags={"#jhonsnow"}
-            isPinned={true}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onPinNote={() => {}}
-          />
-
-          <NoteCard
-            title={"wakeup at 6 a.m."}
-            date={"5th June, 2021"}
-            content={"You know nothing, Jon Snow"}
-            tags={"#jhonsnow"}
-            isPinned={true}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onPinNote={() => {}}
-          />
-
-          <NoteCard
-            title={"wakeup at 6 a.m."}
-            date={"5th June, 2021"}
-            content={"You know nothing, Jon Snow"}
-            tags={"#jhonsnow"}
-            isPinned={true}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onPinNote={() => {}}
-          />
-
-          <NoteCard
-            title={"wakeup at 6 a.m."}
-            date={"5th June, 2021"}
-            content={"You know nothing, Jon Snow"}
-            tags={"#jhonsnow"}
-            isPinned={true}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onPinNote={() => {}}
-          />
-
-          <NoteCard
-            title={"wakeup at 6 a.m."}
-            date={"5th June, 2021"}
-            content={"You know nothing, Jon Snow"}
-            tags={"#jhonsnow"}
-            isPinned={true}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onPinNote={() => {}}
-          />
-
-          <NoteCard
-            title={"wakeup at 6 a.m."}
-            date={"5th June, 2021"}
-            content={"You know nothing, Jon Snow"}
-            tags={"#jhonsnow"}
-            isPinned={false}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onPinNote={() => {}}
-          />
+          {allNotes.map((note, index) => (
+            <NoteCard
+              key={note._id}
+              title={note.title}
+              date={note.createdAt}
+              content={note.content}
+              tags={note.tags}
+              isPinned={note.isPinned}
+              onEdit={() => {}}
+              onDelete={() => {}}
+              onPinNote={() => {}}
+            />
+          ))}
         </div>
       </div>
 
