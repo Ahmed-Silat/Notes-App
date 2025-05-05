@@ -2,11 +2,20 @@ import { useState } from "react";
 import SearchBar from "./SearchBar/SearchBar";
 import ProfileInfo from "./Cards/ProfileInfo";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import {
+  signoutFailure,
+  signoutStart,
+  signoutSuccess,
+} from "../redux/user/userSlice";
+import axios from "axios";
 
-const Navbar = () => {
+const Navbar = ({ userInfo }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const navigate = useNavigate();
+
+  const dispatch = useDispatch();
 
   const handleSearch = () => {};
 
@@ -14,8 +23,24 @@ const Navbar = () => {
     setSearchQuery("");
   };
 
-  const onLogout = () => {
-    navigate("/login");
+  const onLogout = async () => {
+    try {
+      dispatch(signoutStart());
+
+      const res = await axios.get("http://localhost:3000/api/auth/signout", {
+        withCredentials: true,
+      });
+
+      if (res.data.success === false) {
+        dispatch(signoutFailure(res.data.message));
+        return;
+      }
+
+      dispatch(signoutSuccess());
+      navigate("/login");
+    } catch (error) {
+      dispatch(signoutFailure(error.message));
+    }
   };
 
   return (
@@ -34,7 +59,7 @@ const Navbar = () => {
         onClearSearch={onClearSearch}
       />
 
-      <ProfileInfo onLogout={onLogout} />
+      <ProfileInfo userInfo={userInfo} onLogout={onLogout} />
     </div>
   );
 };
