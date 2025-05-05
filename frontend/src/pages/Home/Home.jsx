@@ -51,6 +51,10 @@ const Home = () => {
     }
   };
 
+  const handleEdit = (noteDetails) => {
+    setOpenAddEditModal({ isShown: true, data: noteDetails, type: "edit" });
+  };
+
   return (
     <>
       <Navbar userInfo={userInfo} />
@@ -64,7 +68,9 @@ const Home = () => {
               content={note.content}
               tags={note.tags}
               isPinned={note.isPinned}
-              onEdit={() => {}}
+              onEdit={() => {
+                handleEdit(note);
+              }}
               onDelete={() => {}}
               onPinNote={() => {}}
             />
