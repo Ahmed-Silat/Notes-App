@@ -9,6 +9,11 @@ import Navbar from "../../components/Navbar";
 import axios from "axios";
 import { toast } from "react-toastify";
 import EmptyCard from "../../components/EmptyCard/EmptyCard";
+import {
+  deleteUserNotes,
+  getSearchNotes,
+  getUserAllNotes,
+} from "../../Service/NotesService";
 
 const Home = () => {
   const { currentUser, loading, errorDispatch } = useSelector(
@@ -39,9 +44,11 @@ const Home = () => {
   // get all notes
   const getAllNotes = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/note/all", {
-        withCredentials: true,
-      });
+      // const res = await axios.get("http://localhost:3000/api/note/all", {
+      //   withCredentials: true,
+      // });
+
+      const res = await getUserAllNotes();
 
       if (res.data.success === false) {
         console.log(res.data);
@@ -63,10 +70,12 @@ const Home = () => {
     const noteId = data._id;
 
     try {
-      const res = await axios.delete(
-        `http://localhost:3000/api/note/delete/${noteId}`,
-        { withCredentials: true }
-      );
+      // const res = await axios.delete(
+      //   `http://localhost:3000/api/note/delete/${noteId}`,
+      //   { withCredentials: true }
+      // );
+
+      const res = await deleteUserNotes(noteId);
 
       if (res.data.success === false) {
         toast.error(res.data.message);
@@ -82,10 +91,12 @@ const Home = () => {
 
   const onSearchNote = async (query) => {
     try {
-      const res = await axios.get("http://localhost:3000/api/note/search", {
-        params: { query },
-        withCredentials: true,
-      });
+      // const res = await axios.get("http://localhost:3000/api/note/search", {
+      //   params: { query },
+      //   withCredentials: true,
+      // });
+
+      const res = await getSearchNotes(query);
 
       if (res.data.success === false) {
         console.log(res.data.message);
