@@ -10,6 +10,7 @@ import {
 } from "../../redux/user/userSlice";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { login } from "../../Service/AuthService";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -39,14 +40,16 @@ const Login = () => {
     try {
       dispatch(signInStart);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/signin",
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      );
+      // const res = await axios.post(
+      //   "http://localhost:3000/api/auth/signin",
+      //   {
+      //     email,
+      //     password,
+      //   },
+      //   { withCredentials: true }
+      // );
+
+      const res = await login(email, password);
 
       if (res.data.success === false) {
         toast.error(res.data.message);
