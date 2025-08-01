@@ -2,8 +2,11 @@ import { useState } from "react";
 import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
-import axios from "axios";
+// import axios from "axios";
 import { toast } from "react-toastify";
+import { singnUp } from "../../Service/AuthService";
+// import { useDispatch } from "react-redux";
+// import { signInStart, signInSuccess } from "../../redux/user/userSlice";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -11,6 +14,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSignUp = async (event) => {
@@ -36,11 +40,14 @@ const Signup = () => {
     // sign up api
 
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/signup",
-        { username: name, email, password },
-        { withCredentials: true }
-      );
+      // dispatch(signInStart);
+      // const res = await axios.post(
+      //   "http://localhost:3000/api/auth/signup",
+      //   { username: name, email, password },
+      //   { withCredentials: true }
+      // );
+
+      const res = await singnUp(name, email, password);
 
       if (res.data.success === false) {
         setEmail(res.data.message);
@@ -53,6 +60,7 @@ const Signup = () => {
       setError("");
 
       navigate("/login");
+      // dispatch(signInSuccess(res.data));
     } catch (error) {
       toast.error(error.message);
       console.log(error.message);
