@@ -15,7 +15,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
-      <ToastContainer position="top-center" autoClose={500}/>
+      <ToastContainer position="top-right" autoClose={500} />
     </BrowserRouter>
   );
 };
