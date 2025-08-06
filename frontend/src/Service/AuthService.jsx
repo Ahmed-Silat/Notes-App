@@ -29,7 +29,7 @@ export const singnUp = async (username, email, password) => {
 };
 
 export const signout = async () => {
-  const data = await axios.get("http://localhost:3000/api/auth/signout", {
+  const data = await axios.get(`${EXPRESS_API_URI}/api/auth/signout`, {
     withCredentials: true,
   });
   return data;
