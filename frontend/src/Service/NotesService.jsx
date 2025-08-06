@@ -35,10 +35,21 @@ export const deleteUserNotes = async (noteId) => {
   return data;
 };
 
-export const getSearchNotes = async (query) => {
+export const getUserSearchNotes = async (query) => {
   const data = await axios.get("http://localhost:3000/api/note/search", {
     params: { query },
     withCredentials: true,
   });
+  return data;
+};
+
+export const updatePinnedNotes = async (noteData) => {
+  const noteId = noteData._id;
+
+  const data = await axios.put(
+    `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
+    { isPinned: !noteData.isPinned },
+    { withCredentials: true }
+  );
   return data;
 };

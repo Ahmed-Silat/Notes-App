@@ -11,8 +11,9 @@ import { toast } from "react-toastify";
 import EmptyCard from "../../components/EmptyCard/EmptyCard";
 import {
   deleteUserNotes,
-  getSearchNotes,
+  getUserSearchNotes,
   getUserAllNotes,
+  updatePinnedNotes,
 } from "../../Service/NotesService";
 
 const Home = () => {
@@ -96,7 +97,7 @@ const Home = () => {
       //   withCredentials: true,
       // });
 
-      const res = await getSearchNotes(query);
+      const res = await getUserSearchNotes(query);
 
       if (res.data.success === false) {
         console.log(res.data.message);
@@ -117,14 +118,16 @@ const Home = () => {
   };
 
   const updateIsPinned = async (noteData) => {
-    const noteId = noteData._id;
+    // const noteId = noteData._id;
 
     try {
-      const res = await axios.put(
-        `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
-        { isPinned: !noteData.isPinned },
-        { withCredentials: true }
-      );
+      // const res = await axios.put(
+      //   `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
+      //   { isPinned: !noteData.isPinned },
+      //   { withCredentials: true }
+      // );
+
+      const res = await updatePinnedNotes(noteData);
 
       if (res.data.success === false) {
         toast.error(res.data.message);
