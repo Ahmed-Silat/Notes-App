@@ -11,7 +11,7 @@ export const getUserAllNotes = async () => {
 
 export const createNotes = async (title, content, tags) => {
   const res = await axios.post(
-    "http://localhost:3000/api/note/add",
+    `${EXPRESS_API_URI}/api/note/add`,
     { title, content, tags },
     { withCredentials: true }
   );
@@ -20,7 +20,7 @@ export const createNotes = async (title, content, tags) => {
 
 export const updateUserNotes = async (noteId, title, content, tags) => {
   const data = await axios.put(
-    `http://localhost:3000/api/note/edit/${noteId}`,
+    `${EXPRESS_API_URI}/api/note/edit/${noteId}`,
     { title, content, tags },
     { withCredentials: true }
   );
@@ -29,14 +29,14 @@ export const updateUserNotes = async (noteId, title, content, tags) => {
 
 export const deleteUserNotes = async (noteId) => {
   const data = await axios.delete(
-    `http://localhost:3000/api/note/delete/${noteId}`,
+    `${EXPRESS_API_URI}/api/note/delete/${noteId}`,
     { withCredentials: true }
   );
   return data;
 };
 
 export const getUserSearchNotes = async (query) => {
-  const data = await axios.get("http://localhost:3000/api/note/search", {
+  const data = await axios.get(`${EXPRESS_API_URI}/api/note/search`, {
     params: { query },
     withCredentials: true,
   });
@@ -47,7 +47,7 @@ export const updatePinnedNotes = async (noteData) => {
   const noteId = noteData._id;
 
   const data = await axios.put(
-    `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
+    `${EXPRESS_API_URI}/api/note/update-note-pinned/${noteId}`,
     { isPinned: !noteData.isPinned },
     { withCredentials: true }
   );
