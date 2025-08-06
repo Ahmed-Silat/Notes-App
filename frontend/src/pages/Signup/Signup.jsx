@@ -70,14 +70,16 @@ const Signup = () => {
 
   return (
     <>
-      <div className="flex items-center justify-center mt-28">
-        <div className="w-96 border rounded bg-white px-7 py-10">
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 sm:p-10">
           <form onSubmit={handleSignUp}>
-            <h4 className="text-2xl mb-7">Sign Up</h4>
+            <h2 className="text-3xl font-bold text-center text-[#2B85FF] mb-8">
+              Create Account 📝
+            </h2>
 
             <input
               type="text"
-              placeholder="Name"
+              placeholder="Full Name"
               className="input-box"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -96,17 +98,17 @@ const Signup = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            {error && <p className="text-red-500 text-sm pb-1">{error}</p>}
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
             <button type="submit" className="btn-primary">
-              SIGN UP
+              Sign Up
             </button>
 
-            <p className="text-sm text-center mt-4">
+            <p className="text-sm text-center mt-6">
               Already have an account?{" "}
               <Link
-                to={"/login"}
-                className="font-medium text-[#2B85FF] underline"
+                to="/login"
+                className="text-[#2B85FF] underline font-medium"
               >
                 Login
               </Link>
