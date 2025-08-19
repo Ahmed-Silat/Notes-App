@@ -1,4 +1,4 @@
-import { MdAdd } from "react-icons/md";
+import { MdAdd, MdDelete } from "react-icons/md";
 import NoteCard from "../../components/Cards/NoteCard";
 import { useEffect, useState } from "react";
 import Modal from "react-modal";
@@ -7,7 +7,8 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import axios from "axios";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import EmptyCard from "../../components/EmptyCard/EmptyCard";
 import {
   deleteUserNotes,
@@ -83,7 +84,11 @@ const Home = () => {
         return;
       }
 
-      toast.success(res.data.message);
+      // toast.success(res.data.message);
+      toast("Deleted Successfully", {
+        icon: <MdDelete color="red" size={20} />,
+        style: { backgroundColor: "#fff", color: "black" },
+      });
       getAllNotes();
     } catch (error) {
       toast.error(error.message);
@@ -201,7 +206,7 @@ const Home = () => {
         onRequestClose={() => {}}
         style={{ overlay: { backgroundColor: "rgba(0,0,0,0.2)" } }}
         contentLabel=""
-        className="w-[40%] max-md:w-[60%] max-sm:w-[70%] max-h-3/4 rounded-md mx-auto mt-14"
+        className="w-[80%] max-md:w-[90%] max-sm:w-[95%] max-h-3/4 rounded-md mx-auto mt-14"
       >
         <AddEditNotes
           onClose={() =>

@@ -2,12 +2,18 @@ import { useState } from "react";
 import { MdClose } from "react-icons/md";
 import TagInput from "../../components/Input/TagInput";
 import axios from "axios";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { createNotes, updateUserNotes } from "../../Service/NotesService";
+import RichTextEditor from "react-rte";
 
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const [title, setTitle] = useState(noteData?.title || "");
-  const [content, setContent] = useState(noteData?.content || "");
+  const [content, setContent] = useState(
+    noteData?.content
+      ? RichTextEditor.createValueFromString(noteData.content, "html")
+      : RichTextEditor.createEmptyValue()
+  );
   const [tags, setTags] = useState(noteData?.tags || []);
   const [error, setError] = useState(null);
 
@@ -22,7 +28,9 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       //   { withCredentials: true }
       // );
 
-      const res = await updateUserNotes(noteId, title, content, tags);
+      const htmlContent = content.toString("html");
+      console.log("content", htmlContent);
+      const res = await updateUserNotes(noteId, title, htmlContent, tags);
 
       if (res.data.success === false) {
         console.log(res.data.message);
@@ -49,8 +57,9 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       //   { title, content, tags },
       //   { withCredentials: true }
       // );
-
-      const res = await createNotes(title, content, tags);
+      const htmlContent = content.toString("html");
+      console.log("content", htmlContent);
+      const res = await createNotes(title, htmlContent, tags);
 
       if (res.data.success === false) {
         console.log(res.data.message);
@@ -89,9 +98,13 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
     }
   };
 
+  const handleNotesChange = (value) => {
+    setContent(value);
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-lg w-full max-w-md p-5 overflow-y-auto max-h-[90vh] relative">
+      <div className="bg-white rounded-lg w-full max-w-3xl max-md:max-w-xl max-sm:w-[90%] p-5 overflow-y-auto max-h-[90vh] relative">
         <button
           className="w-10 h-10 rounded-full flex items-center justify-center absolute top-2 right-2 hover:bg-slate-50"
           onClick={onClose}
@@ -104,7 +117,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
 
           <input
             type="text"
-            className="text-2xl text-slate-950 outline-none w-full"
+            className="text-2xl text-slate-950 w-full border outline-none border-gray-300 rounded-md p-2"
             placeholder="Wake up at 6 a.m."
             value={title}
             onChange={({ target }) => setTitle(target.value)}
@@ -114,12 +127,19 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
         <div className="flex flex-col gap-2 mt-4">
           <label className="input-label text-red-400 uppercase">Content</label>
 
-          <textarea
+          {/* <textarea
             className="text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded w-full"
             placeholder="Content..."
             rows={10}
             value={content}
             onChange={({ target }) => setContent(target.value)}
+          /> */}
+
+          <RichTextEditor
+            // ref={editorRef}
+            value={content}
+            onChange={handleNotesChange}
+            className="min-h-[300px]"
           />
         </div>
 

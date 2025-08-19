@@ -9,7 +9,8 @@ import {
   signoutSuccess,
 } from "../redux/user/userSlice";
 // import axios from "axios";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { signout } from "../Service/AuthService";
 
 const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {

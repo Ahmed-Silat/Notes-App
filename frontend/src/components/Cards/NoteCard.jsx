@@ -12,6 +12,9 @@ const NoteCard = ({
   onEdit,
   onDelete,
 }) => {
+  // const noteTextConversion=()=>{
+  //   const text = dangerouslySetInnerHTML={{ __html: content }}
+  // }
   return (
     <div className="border rounded p-4 bg-white hover:shadow-xl transition-all ease-in-out w-full max-w-sm sm:max-w-md md:max-w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -30,9 +33,12 @@ const NoteCard = ({
         />
       </div>
 
-      <p className="text-xs text-slate-600 mt-2 break-words">
-        {content?.slice(0, 60)}
-      </p>
+      <p
+        className="text-xs text-slate-600 mt-2 break-words"
+        dangerouslySetInnerHTML={{
+          __html: content,
+        }}
+      ></p>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2 gap-2">
         <div className="text-xs text-slate-500 flex flex-wrap gap-1">
