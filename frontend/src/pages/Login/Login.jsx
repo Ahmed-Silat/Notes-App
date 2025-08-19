@@ -9,7 +9,8 @@ import {
   signInSuccess,
 } from "../../redux/user/userSlice";
 // import axios from "axios";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { login } from "../../Service/AuthService";
 
 const Login = () => {
