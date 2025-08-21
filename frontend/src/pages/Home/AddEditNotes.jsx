@@ -1,19 +1,17 @@
 import { useState } from "react";
 import { MdClose } from "react-icons/md";
 import TagInput from "../../components/Input/TagInput";
-import axios from "axios";
+// import axios from "axios";
 // import { toast } from "react-toastify";
 import toast from "react-hot-toast";
 import { createNotes, updateUserNotes } from "../../Service/NotesService";
 import RichTextEditor from "react-rte";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const [title, setTitle] = useState(noteData?.title || "");
-  const [content, setContent] = useState(
-    noteData?.content
-      ? RichTextEditor.createValueFromString(noteData.content, "html")
-      : RichTextEditor.createEmptyValue()
-  );
+  const [content, setContent] = useState(noteData?.content || "");
   const [tags, setTags] = useState(noteData?.tags || []);
   const [error, setError] = useState(null);
 
@@ -102,6 +100,41 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
     setContent(value);
   };
 
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, 4, 5, 6, false] }], // Headings
+      ["bold", "italic", "underline", "strike"], // Text formatting
+      [{ color: [] }, { background: [] }], // Text & background color
+      [{ script: "sub" }, { script: "super" }], // Subscript/Superscript
+      ["blockquote", "code-block"], // Blockquote, Code
+      [{ list: "ordered" }, { list: "bullet" }], // Lists
+      [{ indent: "-1" }, { indent: "+1" }], // Indent
+      [{ align: [] }], // Text align
+      ["link", "image", "video"], // Media
+      ["clean"], // Remove formatting
+    ],
+  };
+
+  const formats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "blockquote",
+    "code-block",
+    "list",
+    "bullet",
+    "indent",
+    "link",
+    "image",
+    "video",
+    "color",
+    "background",
+    "align",
+    "script",
+  ];
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-lg w-full max-w-3xl max-md:max-w-xl max-sm:w-[90%] p-5 overflow-y-auto max-h-[90vh] relative">
@@ -135,11 +168,18 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
             onChange={({ target }) => setContent(target.value)}
           /> */}
 
-          <RichTextEditor
-            // ref={editorRef}
+          {/* <RichTextEditor
             value={content}
             onChange={handleNotesChange}
             className="min-h-[300px]"
+          /> */}
+          <ReactQuill
+            value={content}
+            onChange={handleNotesChange}
+            className="min-h-[300px]"
+            theme="snow"
+            // formats={formats}
+            modules={modules}
           />
         </div>
 
