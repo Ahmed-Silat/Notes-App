@@ -1,7 +1,7 @@
 import { Layout, Dropdown, Avatar, Menu } from "antd";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
-import { getInitials } from "../utils/helper";
+import { getInitials } from "../lib/helper";
 import { useNavigate } from "react-router-dom";
 import {
   signoutFailure,
