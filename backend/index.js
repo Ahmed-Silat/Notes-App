@@ -36,6 +36,7 @@ app.listen(3000, () => {
 });
 
 // import routes
+
 import authRouter from "./routes/auth.route.js";
 import noteRouter from "./routes/note.route.js";
 

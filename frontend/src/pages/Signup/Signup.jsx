@@ -1,123 +1,131 @@
-import { useState } from "react";
-import PasswordInput from "../../components/Input/PasswordInput";
+import { Card, Button } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { validateEmail } from "../../utils/helper";
-// import axios from "axios";
-// import { toast } from "react-toastify";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { singnUp } from "../../Service/AuthService";
-// import { useDispatch } from "react-redux";
-// import { signInStart, signInSuccess } from "../../redux/user/userSlice";
+import FormInput from "../../components/Input/FormInput";
+import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
 
 const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  // const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleSignUp = async (event) => {
-    event.preventDefault();
+  const validation = useFormik({
+    initialValues: { name: "", email: "", password: "", confirmPassword: "" },
+    validationSchema: Yup.object({
+      name: Yup.string().required("Full Name is required"),
+      email: Yup.string().email("Invalid email").required("Email is required"),
+      password: Yup.string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref("password"), null], "Passwords must match")
+        .required("Confirm Password is required"),
+    }),
+    
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
+        const res = await singnUp(values.name, values.email, values.password);
+        console.log("Signup response:", res);
 
-    if (!name) {
-      setError("Please Enter Your Name");
-      return;
-    }
+        if (res.success === false) {
+          toast.error(res.message);
+          return;
+        }
 
-    if (!validateEmail(email)) {
-      setError("Please Enter a Valid Email Address");
-      return;
-    }
-
-    if (!password) {
-      setError("Please Enter The Password");
-      return;
-    }
-
-    setError("");
-
-    // sign up api
-
-    try {
-      // dispatch(signInStart);
-      // const res = await axios.post(
-      //   "http://localhost:3000/api/auth/signup",
-      //   { username: name, email, password },
-      //   { withCredentials: true }
-      // );
-
-      const res = await singnUp(name, email, password);
-
-      if (res.data.success === false) {
-        setEmail(res.data.message);
-        toast.error(res.data.message);
-        return;
+        toast.success(res.data.message);
+        resetForm();
+        navigate("/login");
+      } catch (error) {
+        // console.error("Signup error:", error.response.data.message);
+        toast.error(error.response.data.message || "Something went wrong");
+      } finally {
+        setSubmitting(false);
       }
-
-      toast.success(res.data.message);
-
-      setError("");
-
-      navigate("/login");
-      // dispatch(signInSuccess(res.data));
-    } catch (error) {
-      toast.error(error.message);
-      console.log(error.message);
-      setError(error.message);
-    }
-  };
+    },
+  });
 
   return (
-    <>
-      <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 sm:p-10">
-          <form onSubmit={handleSignUp}>
-            <h2 className="text-3xl font-bold text-center text-[#2B85FF] mb-8">
-              Create Account 📝
-            </h2>
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-[#17313E] to-[#415E72] px-4">
+      <Card className="w-full max-w-lg rounded-2xl shadow-2xl p-8 sm:p-10 bg-white">
+        <h2 className="text-3xl font-bold text-center text-[#2B85FF] mb-2">
+          Create an Account
+        </h2>
+        <p className="text-gray-500 text-center mb-6">
+          Join us and get started 🚀
+        </p>
 
-            <input
-              type="text"
-              placeholder="Full Name"
-              className="input-box"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+        <form onSubmit={validation.handleSubmit} className="space-y-4">
+          <FormInput
+            name="name"
+            label="Full Name"
+            type="text"
+            placeholder="John Doe"
+            value={validation.values.name}
+            onChange={validation.handleChange}
+            onBlur={validation.handleBlur}
+            error={validation.errors.name}
+            touched={validation.touched.name}
+            icon={<UserOutlined />}
+          />
 
-            <input
-              type="text"
-              placeholder="Email"
-              className="input-box"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+          <FormInput
+            name="email"
+            label="Email"
+            type="text"
+            placeholder="example@email.com"
+            value={validation.values.email}
+            onChange={validation.handleChange}
+            onBlur={validation.handleBlur}
+            error={validation.errors.email}
+            touched={validation.touched.email}
+            icon={<MailOutlined />}
+          />
 
-            <PasswordInput
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <FormInput
+            name="password"
+            label="Password"
+            type="password"
+            placeholder="Enter password"
+            value={validation.values.password}
+            onChange={validation.handleChange}
+            onBlur={validation.handleBlur}
+            error={validation.errors.password}
+            touched={validation.touched.password}
+            icon={<LockOutlined />}
+          />
 
-            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+          <FormInput
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            placeholder="Re-enter password"
+            value={validation.values.confirmPassword}
+            onChange={validation.handleChange}
+            onBlur={validation.handleBlur}
+            error={validation.errors.confirmPassword}
+            touched={validation.touched.confirmPassword}
+            icon={<LockOutlined />}
+          />
 
-            <button type="submit" className="btn-primary">
-              Sign Up
-            </button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={validation.isSubmitting}
+            className="w-full mt-4 bg-[#2B85FF] hover:!bg-[#1E66CC] rounded-md py-2 text-lg"
+          >
+            Sign Up
+          </Button>
 
-            <p className="text-sm text-center mt-6">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-[#2B85FF] underline font-medium"
-              >
-                Login
-              </Link>
-            </p>
-          </form>
-        </div>
-      </div>
-    </>
+          <p className="text-sm text-center mt-6">
+            Already have an account?{" "}
+            <Link to="/login" className="text-[#2B85FF] underline font-medium">
+              Login
+            </Link>
+          </p>
+        </form>
+      </Card>
+    </div>
   );
 };
 

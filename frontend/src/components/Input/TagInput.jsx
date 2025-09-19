@@ -17,6 +17,7 @@ const TagInput = ({ tags, setTags }) => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
+      e.preventDefault(); // ⛔ stop form submission
       addNewTag();
     }
   };
@@ -24,6 +25,7 @@ const TagInput = ({ tags, setTags }) => {
   const handleRemoveTag = (tagToRemove) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
+
   return (
     <div>
       {tags?.length > 0 && (
@@ -34,11 +36,7 @@ const TagInput = ({ tags, setTags }) => {
               className="flex items-center gap-2 text-sm text-slate-900 bg-slate-100 px-3 py-3 rounded"
             >
               # {tag}
-              <button
-                onClick={() => {
-                  handleRemoveTag(tag);
-                }}
-              >
+              <button onClick={() => handleRemoveTag(tag)}>
                 <MdClose />
               </button>
             </span>
@@ -57,10 +55,9 @@ const TagInput = ({ tags, setTags }) => {
         />
 
         <button
+          type="button" // ✅ prevent form submit
           className="w-8 h-8 flex items-center justify-center rounded border border-blue-700 hover:bg-blue-700"
-          onClick={() => {
-            addNewTag();
-          }}
+          onClick={addNewTag}
         >
           <MdAdd className="text-2xl text-blue-700 hover:text-white" />
         </button>

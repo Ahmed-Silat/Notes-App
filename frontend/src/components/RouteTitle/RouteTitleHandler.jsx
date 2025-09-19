@@ -19,6 +19,12 @@ const RouteTitleHandler = () => {
       case "/signup":
         title = "Sign Up | Notes App";
         break;
+      case "/reminders":
+        title = "Reminders | Notes App";
+        break;
+      case "/archive":
+        title = "Archive | Notes App";
+        break;
       default:
         title = "Notes App";
     }
