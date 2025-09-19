@@ -8,14 +8,15 @@
   }
 
   body {
-    background-color: rgb(241, 245, 241);
+    background-color: #889984;
     overflow-x: hidden;
   }
 }
 
-.public-DraftEditor-content {
-  min-height: 300px; /* your desired height */
-  padding: 12px; /* so text isn't stuck at the top */
+.ql-editor {
+  min-height: 300px;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 @layer components {
