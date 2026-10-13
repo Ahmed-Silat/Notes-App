@@ -78,7 +78,10 @@ const Navbar = ({ onLoggingOutChange }) => {
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent
+              align="end"
+              className="w-56 ease-out data-open:duration-200 data-closed:duration-150 motion-reduce:animate-none! motion-reduce:transition-none!"
+            >
               <DropdownMenuLabel className="flex flex-col gap-0.5">
                 <span className="truncate font-medium capitalize text-foreground">
                   {userName}
