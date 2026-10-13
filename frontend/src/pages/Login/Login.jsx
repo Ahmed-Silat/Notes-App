@@ -57,36 +57,39 @@ const Login = () => {
       title="Welcome back"
       description="Log in to your account to pick up where you left off."
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5" noValidate>
-        <FormField
-          {...register("email")}
-          label="Email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
-          icon={Mail}
-          error={errors.email?.message}
-        />
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        {/* disables every input and button while the request is in flight */}
+        <fieldset disabled={isSubmitting} className="grid min-w-0 gap-5">
+          <FormField
+            {...register("email")}
+            label="Email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            icon={Mail}
+            error={errors.email?.message}
+          />
 
-        <FormField
-          {...register("password")}
-          label="Password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="Enter your password"
-          icon={Lock}
-          error={errors.password?.message}
-        />
+          <FormField
+            {...register("password")}
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            icon={Lock}
+            error={errors.password?.message}
+          />
 
-        <Button
-          type="submit"
-          size="lg"
-          className="mt-1 w-full"
-          disabled={isSubmitting}
-        >
-          {isSubmitting && <Loader2 className="animate-spin" />}
-          Log in
-        </Button>
+          <Button
+            type="submit"
+            size="lg"
+            className="mt-1 w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting && <Loader2 className="animate-spin" />}
+            Log in
+          </Button>
+        </fieldset>
       </form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
