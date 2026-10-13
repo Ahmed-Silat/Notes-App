@@ -27,6 +27,9 @@ const noteSchema = new mongoose.Schema({
   },
 });
 
+// matches the list sort (pinned, newest, _id) so each page is a fast index scan
+noteSchema.index({ userId: 1, isPinned: -1, createdAt: -1, _id: -1 });
+
 const Note = mongoose.model("Note", noteSchema);
 
 export default Note;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { decodeCursor } from "../utils/cursor.js";
 
 const title = z
   .string({ error: "Title is required" })
@@ -39,7 +40,29 @@ export const updateNoteDto = z
 
 export const updateNotePinnedDto = z.object({ isPinned });
 
-export const searchNoteDto = z.object({
+export const NOTES_PAGE_SIZE = 24;
+export const NOTES_PAGE_SIZE_MAX = 100;
+
+const cursor = z.string().transform((value, ctx) => {
+  const decoded = decodeCursor(value);
+  if (!decoded) {
+    ctx.addIssue({ code: "custom", message: "Invalid cursor" });
+    return z.NEVER;
+  }
+  return decoded;
+});
+
+export const listNotesDto = z.object({
+  limit: z.coerce
+    .number({ error: "limit must be a number" })
+    .int("limit must be a whole number")
+    .min(1, "limit must be at least 1")
+    .max(NOTES_PAGE_SIZE_MAX, `limit can be at most ${NOTES_PAGE_SIZE_MAX}`)
+    .default(NOTES_PAGE_SIZE),
+  cursor: cursor.optional(),
+});
+
+export const searchNoteDto = listNotesDto.extend({
   query: z
     .string({ error: "search query is required" })
     .trim()

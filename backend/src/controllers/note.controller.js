@@ -26,12 +26,17 @@ export const editNote = asyncHandler(async (req, res) => {
 });
 
 export const getAllNotes = asyncHandler(async (req, res) => {
-  const notes = await noteService.getAllNotes(req.user.id);
+  const { notes, total, nextCursor } = await noteService.getNotes(
+    req.user.id,
+    req.query
+  );
 
   res.status(200).json({
     success: true,
     message: "All notes retreived successfully",
     notes,
+    total,
+    nextCursor,
   });
 });
 
@@ -59,11 +64,18 @@ export const updateNotePinned = asyncHandler(async (req, res) => {
 });
 
 export const searchNote = asyncHandler(async (req, res) => {
-  const notes = await noteService.searchNotes(req.user.id, req.query.query);
+  const { query, ...page } = req.query;
+  const { notes, total, nextCursor } = await noteService.searchNotes(
+    req.user.id,
+    query,
+    page
+  );
 
   res.status(200).json({
     success: true,
     message: "Notes matching the search query retrieved successfully",
     notes,
+    total,
+    nextCursor,
   });
 });
