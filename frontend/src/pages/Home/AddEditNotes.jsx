@@ -70,8 +70,9 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
         return;
       }
 
+      // keep the save spinner until the list shows the change
+      await getAllNotes();
       toast.success(res.data.message);
-      getAllNotes();
       onClose();
     } catch (error) {
       toast.error(getErrorMessage(error));

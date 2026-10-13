@@ -1,4 +1,11 @@
-import { Archive, BellPlus, Pencil, Pin, Trash2 } from "lucide-react";
+import {
+  Archive,
+  BellPlus,
+  Loader2,
+  Pencil,
+  Pin,
+  Trash2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,14 +40,19 @@ const NoteCard = ({
   content,
   tags,
   isPinned,
+  busyLabel,
   onPinNote,
   onEdit,
   onDelete,
 }) => {
   const preview = htmlToText(content);
+  const isBusy = Boolean(busyLabel);
 
   return (
     <Card
+      // while busy the card can't be clicked or focused
+      inert={isBusy}
+      aria-busy={isBusy}
       className={cn(
         "group relative gap-3 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg has-[button:focus-visible]:ring-2 has-[button:focus-visible]:ring-ring/50",
         isPinned && "ring-brand/50 dark:ring-brand/40"
@@ -112,6 +124,16 @@ const NoteCard = ({
           </ActionButton>
         </div>
       </div>
+
+      {isBusy && (
+        <div
+          role="status"
+          className="absolute inset-0 z-20 flex items-center justify-center gap-2 bg-card/75 text-sm font-medium backdrop-blur-[1px]"
+        >
+          <Loader2 className="size-4 animate-spin text-brand" />
+          {busyLabel}
+        </div>
+      )}
     </Card>
   );
 };

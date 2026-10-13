@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { NotebookPen, Plus, SearchX } from "lucide-react";
 import {
@@ -9,6 +10,7 @@ import {
   updatePinnedNotes,
 } from "@/Service/NotesService";
 import { getErrorMessage, getGreeting } from "@/lib/helper";
+import { useDebounce } from "@/hooks/useDebounce";
 import NoteCard from "@/components/Cards/NoteCard";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import SearchBar from "@/components/SearchBar/SearchBar";
@@ -27,7 +29,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_DEBOUNCE_MS = 1000;
+const SEARCH_PARAM = "search";
 
 const NotesGrid = ({ children }) => (
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -61,10 +64,20 @@ const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
   const firstName = currentUser?.rest?.username?.split(" ")[0];
 
+  // The applied search lives in the URL (?search=...), so it survives a refresh
+  // and can be shared; the input keeps its own state while the user types.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const appliedQuery = (searchParams.get(SEARCH_PARAM) ?? "").trim();
+  const [searchQuery, setSearchQuery] = useState(appliedQuery);
+  const syncedQuery = useRef(appliedQuery);
+  const isOwnNavigation = useRef(false);
+  const location = useLocation();
+
   const [allNotes, setAllNotes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [appliedQuery, setAppliedQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  // note id -> label shown on that card while it is being pinned/unpinned/deleted
+  const [busyNotes, setBusyNotes] = useState({});
   const [deleteDialog, setDeleteDialog] = useState({ open: false, note: null });
   const [openAddEditModal, setOpenAddEditModal] = useState({
     isShown: false,
@@ -75,42 +88,88 @@ const Home = () => {
   const latestRequest = useRef(0);
 
   // Loads all notes, or the search results when a query is active.
-  const getAllNotes = useCallback(async () => {
-    const requestId = ++latestRequest.current;
+  const getAllNotes = useCallback(
+    async ({ showLoading = false } = {}) => {
+      const requestId = ++latestRequest.current;
+      if (showLoading) setIsSearching(true);
 
-    try {
-      const res = appliedQuery
-        ? await getUserSearchNotes(appliedQuery)
-        : await getUserAllNotes();
+      try {
+        const res = appliedQuery
+          ? await getUserSearchNotes(appliedQuery)
+          : await getUserAllNotes();
 
-      // ignore responses that arrive after a newer request was made
-      if (requestId !== latestRequest.current) return;
+        // ignore responses that arrive after a newer request was made
+        if (requestId !== latestRequest.current) return;
 
-      if (res.data.success) {
-        setAllNotes(res.data.notes);
-      } else {
-        toast.error(res.data.message);
+        if (res.data.success) {
+          setAllNotes(res.data.notes);
+        } else {
+          toast.error(res.data.message);
+        }
+      } catch (error) {
+        if (requestId === latestRequest.current) {
+          toast.error(getErrorMessage(error, "Could not load your notes"));
+        }
+      } finally {
+        if (requestId === latestRequest.current) {
+          setIsLoading(false);
+          setIsSearching(false);
+        }
       }
-    } catch (error) {
-      if (requestId === latestRequest.current) {
-        toast.error(getErrorMessage(error, "Could not load your notes"));
-      }
-    } finally {
-      if (requestId === latestRequest.current) setIsLoading(false);
-    }
-  }, [appliedQuery]);
+    },
+    [appliedQuery]
+  );
 
   useEffect(() => {
-    getAllNotes();
+    getAllNotes({ showLoading: true });
   }, [getAllNotes]);
 
+  const updateSearchParam = useCallback(
+    (query) => {
+      syncedQuery.current = query;
+      isOwnNavigation.current = true;
+      // replace, so typing doesn't add a history entry per search
+      setSearchParams(query ? { [SEARCH_PARAM]: query } : {}, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  const debouncedQuery = useDebounce(searchQuery.trim(), SEARCH_DEBOUNCE_MS);
+
+  // input -> URL, once the user pauses typing
   useEffect(() => {
-    const timeout = setTimeout(
-      () => setAppliedQuery(searchQuery.trim()),
-      SEARCH_DEBOUNCE_MS
-    );
-    return () => clearTimeout(timeout);
-  }, [searchQuery]);
+    // the debounced value lags behind the input; wait until it has caught up,
+    // so a stale value can't overwrite a cleared search
+    if (debouncedQuery !== searchQuery.trim()) return;
+    if (debouncedQuery === syncedQuery.current) return;
+
+    updateSearchParam(debouncedQuery);
+  }, [debouncedQuery, searchQuery, updateSearchParam]);
+
+  // URL -> input on any navigation we didn't make ourselves (e.g. the logo
+  // link to "/"), even to the same URL, so it also drops a half-typed search
+  useEffect(() => {
+    if (isOwnNavigation.current) {
+      isOwnNavigation.current = false;
+      return;
+    }
+    syncedQuery.current = appliedQuery;
+    setSearchQuery(appliedQuery);
+  }, [location.key, appliedQuery]);
+
+  // Shows a loader on one card until the refreshed list has arrived.
+  const withBusyNote = async (noteId, label, action) => {
+    setBusyNotes((busy) => ({ ...busy, [noteId]: label }));
+    try {
+      await action();
+    } finally {
+      setBusyNotes((busy) => {
+        const rest = { ...busy };
+        delete rest[noteId];
+        return rest;
+      });
+    }
+  };
 
   const closeModal = () =>
     setOpenAddEditModal((modal) => ({ ...modal, isShown: false }));
@@ -126,36 +185,42 @@ const Home = () => {
     const { note } = deleteDialog;
     setDeleteDialog((dialog) => ({ ...dialog, open: false }));
 
-    try {
-      const res = await deleteUserNotes(note._id);
-      if (res.data.success === false) {
-        toast.error(res.data.message);
-        return;
+    await withBusyNote(note._id, "Deleting...", async () => {
+      try {
+        const res = await deleteUserNotes(note._id);
+        if (res.data.success === false) {
+          toast.error(res.data.message);
+          return;
+        }
+        await getAllNotes();
+        toast.success("Note deleted");
+      } catch (error) {
+        toast.error(getErrorMessage(error));
       }
-      toast.success("Note deleted");
-      getAllNotes();
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    }
+    });
   };
 
   const updateIsPinned = async (noteData) => {
-    try {
-      const res = await updatePinnedNotes(noteData);
-      if (!res.data.success) {
-        toast.error(res.data.message);
-        return;
+    const label = noteData.isPinned ? "Unpinning..." : "Pinning...";
+
+    await withBusyNote(noteData._id, label, async () => {
+      try {
+        const res = await updatePinnedNotes(noteData);
+        if (!res.data.success) {
+          toast.error(res.data.message);
+          return;
+        }
+        await getAllNotes();
+        toast.success(noteData.isPinned ? "Note unpinned" : "Note pinned");
+      } catch (error) {
+        toast.error(getErrorMessage(error));
       }
-      toast.success(noteData.isPinned ? "Note unpinned" : "Note pinned");
-      getAllNotes();
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    }
+    });
   };
 
   const onClearSearch = () => {
     setSearchQuery("");
-    setAppliedQuery("");
+    updateSearchParam("");
   };
 
   const renderCards = (notes) =>
@@ -167,6 +232,7 @@ const Home = () => {
         content={note.content}
         tags={note.tags}
         isPinned={note.isPinned}
+        busyLabel={busyNotes[note._id]}
         onEdit={() => handleEdit(note)}
         onDelete={() => setDeleteDialog({ open: true, note })}
         onPinNote={() => updateIsPinned(note)}
@@ -177,7 +243,7 @@ const Home = () => {
   const otherNotes = allNotes.filter((note) => !note.isPinned);
 
   const renderNotes = () => {
-    if (isLoading) {
+    if (isLoading || isSearching) {
       return <NotesSkeleton />;
     }
 
@@ -237,7 +303,7 @@ const Home = () => {
           <h1 className="text-3xl font-semibold tracking-tight">
             {appliedQuery ? "Search results" : "Your notes"}
           </h1>
-          {isLoading ? (
+          {isLoading || isSearching ? (
             <Skeleton className="h-5 w-16" />
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -260,6 +326,8 @@ const Home = () => {
                 value={searchQuery}
                 onChange={({ target }) => setSearchQuery(target.value)}
                 onClearSearch={onClearSearch}
+                // spin while waiting for the typing pause and while results load
+                isSearching={isSearching || searchQuery.trim() !== appliedQuery}
               />
               <Button
                 size="lg"
