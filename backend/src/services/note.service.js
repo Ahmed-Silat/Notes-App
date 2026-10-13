@@ -1,5 +1,6 @@
 import * as noteRepository from "../repositories/note.repository.js";
 import { ApiError } from "../utils/ApiError.js";
+import { encodeCursor } from "../utils/cursor.js";
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -38,7 +39,24 @@ export const updateNotePinned = async (userId, noteId, isPinned) => {
   return noteRepository.save(note);
 };
 
-export const getAllNotes = (userId) => noteRepository.findAllByUser(userId);
+const getPage = async (userId, { search, cursor, limit }) => {
+  const [notes, total] = await Promise.all([
+    noteRepository.findPageByUser(userId, { search, cursor, limit }),
+    noteRepository.countByUser(userId, { search }),
+  ]);
+
+  const hasMore = notes.length > limit;
+  const page = hasMore ? notes.slice(0, limit) : notes;
+
+  return {
+    notes: page,
+    total,
+    nextCursor: hasMore ? encodeCursor(page.at(-1)) : null,
+  };
+};
+
+export const getNotes = (userId, { cursor, limit }) =>
+  getPage(userId, { cursor, limit });
 
 export const deleteNote = async (userId, noteId) => {
   const note = await noteRepository.findByIdAndUser(noteId, userId);
@@ -50,5 +68,9 @@ export const deleteNote = async (userId, noteId) => {
   await noteRepository.deleteById(noteId);
 };
 
-export const searchNotes = (userId, query) =>
-  noteRepository.searchByUser(userId, new RegExp(escapeRegex(query), "i"));
+export const searchNotes = (userId, query, { cursor, limit }) =>
+  getPage(userId, {
+    search: new RegExp(escapeRegex(query), "i"),
+    cursor,
+    limit,
+  });

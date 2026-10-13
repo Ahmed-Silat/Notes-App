@@ -9,6 +9,7 @@ import {
 } from "../controllers/note.controller.js";
 import {
   createNoteDto,
+  listNotesDto,
   noteIdParamDto,
   searchNoteDto,
   updateNoteDto,
@@ -27,7 +28,7 @@ router.put(
   validate({ params: noteIdParamDto, body: updateNoteDto }),
   editNote
 );
-router.get("/all", getAllNotes);
+router.get("/all", validate({ query: listNotesDto }), getAllNotes);
 router.delete(
   "/delete/:noteId",
   validate({ params: noteIdParamDto }),

@@ -2,8 +2,10 @@ import axios from "axios";
 
 const EXPRESS_API_URI = import.meta.env.VITE_API_BASE_URI;
 
-export const getUserAllNotes = async () => {
+// One page of notes: { notes, total, nextCursor }
+export const getUserAllNotes = async ({ limit, cursor } = {}) => {
   const data = await axios.get(`${EXPRESS_API_URI}/api/note/all`, {
+    params: { limit, cursor },
     withCredentials: true,
   });
   return data;
@@ -35,9 +37,9 @@ export const deleteUserNotes = async (noteId) => {
   return data;
 };
 
-export const getUserSearchNotes = async (query) => {
+export const getUserSearchNotes = async (query, { limit, cursor } = {}) => {
   const data = await axios.get(`${EXPRESS_API_URI}/api/note/search`, {
-    params: { query },
+    params: { query, limit, cursor },
     withCredentials: true,
   });
   return data;
