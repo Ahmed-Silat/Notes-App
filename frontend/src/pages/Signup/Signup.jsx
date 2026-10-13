@@ -51,51 +51,54 @@ const Signup = () => {
       title="Create an account"
       description="Start capturing your ideas in less than a minute."
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5" noValidate>
-        <FormField
-          {...fieldProps("name")}
-          label="Full name"
-          autoComplete="name"
-          placeholder="John Doe"
-          icon={User}
-        />
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        {/* disables every input and button while the request is in flight */}
+        <fieldset disabled={isSubmitting} className="grid min-w-0 gap-5">
+          <FormField
+            {...fieldProps("name")}
+            label="Full name"
+            autoComplete="name"
+            placeholder="John Doe"
+            icon={User}
+          />
 
-        <FormField
-          {...fieldProps("email")}
-          label="Email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
-          icon={Mail}
-        />
+          <FormField
+            {...fieldProps("email")}
+            label="Email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            icon={Mail}
+          />
 
-        <FormField
-          {...fieldProps("password")}
-          label="Password"
-          type="password"
-          autoComplete="new-password"
-          placeholder="At least 6 characters"
-          icon={Lock}
-        />
+          <FormField
+            {...fieldProps("password")}
+            label="Password"
+            type="password"
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
+            icon={Lock}
+          />
 
-        <FormField
-          {...fieldProps("confirmPassword")}
-          label="Confirm password"
-          type="password"
-          autoComplete="new-password"
-          placeholder="Re-enter your password"
-          icon={Lock}
-        />
+          <FormField
+            {...fieldProps("confirmPassword")}
+            label="Confirm password"
+            type="password"
+            autoComplete="new-password"
+            placeholder="Re-enter your password"
+            icon={Lock}
+          />
 
-        <Button
-          type="submit"
-          size="lg"
-          className="mt-1 w-full"
-          disabled={isSubmitting}
-        >
-          {isSubmitting && <Loader2 className="animate-spin" />}
-          Create account
-        </Button>
+          <Button
+            type="submit"
+            size="lg"
+            className="mt-1 w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting && <Loader2 className="animate-spin" />}
+            Create account
+          </Button>
+        </fieldset>
       </form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">

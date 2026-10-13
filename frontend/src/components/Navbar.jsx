@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const Navbar = () => {
+const Navbar = ({ onLoggingOutChange }) => {
   const { currentUser } = useSelector((state) => state.user);
   const userName = currentUser?.rest?.username || "--";
   const email = currentUser?.rest?.email;
@@ -30,6 +30,8 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   const onLogout = async () => {
+    onLoggingOutChange?.(true);
+
     try {
       dispatch(signoutStart());
       const res = await signout();
@@ -46,6 +48,9 @@ const Navbar = () => {
     } catch (error) {
       toast.error(getErrorMessage(error));
       dispatch(signoutFailure(error.response?.data?.message));
+    } finally {
+      // on success the layout has already unmounted, so this only matters on failure
+      onLoggingOutChange?.(false);
     }
   };
 
@@ -85,7 +90,11 @@ const Navbar = () => {
                 )}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onSelect={onLogout}>
+              <DropdownMenuItem
+                variant="destructive"
+                className="cursor-pointer"
+                onSelect={onLogout}
+              >
                 <LogOut />
                 Log out
               </DropdownMenuItem>

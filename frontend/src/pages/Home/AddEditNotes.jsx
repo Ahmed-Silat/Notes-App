@@ -6,6 +6,7 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { createNotes, updateUserNotes } from "@/Service/NotesService";
 import { getErrorMessage } from "@/lib/helper";
+import { cn } from "@/lib/utils";
 import { noteSchema } from "@/schemas/note.schema";
 import TagInput from "@/components/Input/TagInput";
 import { Button } from "@/components/ui/button";
@@ -93,63 +94,75 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
         </DialogDescription>
       </DialogHeader>
 
-      <div className="grid gap-2">
-        <Label htmlFor="note-title">Title</Label>
-        <Input
-          id="note-title"
-          placeholder="Give your note a title"
-          className="h-10 text-base"
-          aria-invalid={Boolean(titleError)}
-          {...register("title")}
-        />
-        {titleError && <p className="text-sm text-destructive">{titleError}</p>}
-      </div>
+      {/* disables every input and button while the request is in flight */}
+      <fieldset disabled={isSubmitting} className="grid min-w-0 gap-6">
+        <div className="grid gap-2">
+          <Label htmlFor="note-title">Title</Label>
+          <Input
+            id="note-title"
+            placeholder="Give your note a title"
+            className="h-10 text-base"
+            aria-invalid={Boolean(titleError)}
+            {...register("title")}
+          />
+          {titleError && <p className="text-sm text-destructive">{titleError}</p>}
+        </div>
 
-      <div className="grid gap-2">
-        <Label>Content</Label>
-        <div className="note-editor" aria-invalid={Boolean(contentError)}>
+        <div className="grid gap-2">
+          <Label>Content</Label>
+          {/* the editor isn't a native input, so the fieldset can't disable it */}
+          <div
+            className={cn(
+              "note-editor",
+              isSubmitting && "pointer-events-none opacity-50"
+            )}
+            aria-invalid={Boolean(contentError)}
+            aria-disabled={isSubmitting}
+          >
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <ReactQuill
+                  theme="snow"
+                  modules={modules}
+                  placeholder="Start writing..."
+                  readOnly={isSubmitting}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={() => field.onBlur()}
+                />
+              )}
+            />
+          </div>
+          {contentError && (
+            <p className="text-sm text-destructive">{contentError}</p>
+          )}
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="note-tags">Tags</Label>
           <Controller
-            name="content"
+            name="tags"
             control={control}
             render={({ field }) => (
-              <ReactQuill
-                theme="snow"
-                modules={modules}
-                placeholder="Start writing..."
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={() => field.onBlur()}
-              />
+              <TagInput id="note-tags" tags={field.value} setTags={field.onChange} />
             )}
           />
         </div>
-        {contentError && (
-          <p className="text-sm text-destructive">{contentError}</p>
-        )}
-      </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="note-tags">Tags</Label>
-        <Controller
-          name="tags"
-          control={control}
-          render={({ field }) => (
-            <TagInput id="note-tags" tags={field.value} setTags={field.onChange} />
-          )}
-        />
-      </div>
-
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="outline">
-            Cancel
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="animate-spin" />}
+            {isEdit ? "Save changes" : "Add note"}
           </Button>
-        </DialogClose>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="animate-spin" />}
-          {isEdit ? "Save changes" : "Add note"}
-        </Button>
-      </DialogFooter>
+        </DialogFooter>
+      </fieldset>
     </form>
   );
 };
