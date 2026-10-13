@@ -5,6 +5,7 @@ import { z } from "zod";
 const email = z
   .string()
   .trim()
+  .toLowerCase()
   .min(1, "Email is required")
   .pipe(z.email("Invalid email"));
 

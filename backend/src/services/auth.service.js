@@ -18,13 +18,20 @@ export const signup = async ({ username, email, password }) => {
 
   const hashedPassword = await bcryptjs.hash(password, 10);
 
-  const user = await userRepository.create({
-    username,
-    email,
-    password: hashedPassword,
-  });
+  try {
+    const user = await userRepository.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
-  return toPublicUser(user);
+    return toPublicUser(user);
+  } catch (error) {
+    if (error.code === 11000) {
+      throw new ApiError(400, "User already Exist");
+    }
+    throw error;
+  }
 };
 
 export const signin = async ({ email, password }) => {

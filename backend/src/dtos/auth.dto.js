@@ -3,6 +3,7 @@ import { z } from "zod";
 const email = z
   .string({ error: "Email is required" })
   .trim()
+  .toLowerCase()
   .min(1, "Email is required")
   .pipe(z.email("Invalid email"));
 
@@ -10,6 +11,7 @@ export const signupDto = z.object({
   username: z
     .string({ error: "Username is required" })
     .trim()
+    .toLowerCase()
     .min(1, "Username is required"),
   email,
   password: z
