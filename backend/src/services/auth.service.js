@@ -4,6 +4,9 @@ import { env } from "../config/env.js";
 import * as userRepository from "../repositories/user.repository.js";
 import { ApiError } from "../utils/ApiError.js";
 
+// How long a login lasts: the token expires and the cookie is kept this long.
+export const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+
 const toPublicUser = (user) => {
   const { password, ...rest } = user.toObject();
   return rest;
@@ -47,7 +50,9 @@ export const signin = async ({ email, password }) => {
     throw new ApiError(401, "Password is not correct");
   }
 
-  const token = jwt.sign({ id: user._id }, env.JWT_SECRET);
+  const token = jwt.sign({ id: user._id }, env.JWT_SECRET, {
+    expiresIn: SESSION_DURATION_MS / 1000,
+  });
 
   return { token, user: toPublicUser(user) };
 };
