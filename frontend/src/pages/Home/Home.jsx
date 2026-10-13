@@ -237,29 +237,41 @@ const Home = () => {
           <h1 className="text-3xl font-semibold tracking-tight">
             {appliedQuery ? "Search results" : "Your notes"}
           </h1>
-          {!isLoading && (
+          {isLoading ? (
+            <Skeleton className="h-5 w-16" />
+          ) : (
             <p className="text-sm text-muted-foreground">
               {allNotes.length} {allNotes.length === 1 ? "note" : "notes"}
             </p>
           )}
         </div>
 
+        {/* search and "New note" stay unavailable until the first load finishes */}
         <div className="flex w-full gap-2 md:w-auto">
-          <SearchBar
-            className="flex-1 md:w-80"
-            value={searchQuery}
-            onChange={({ target }) => setSearchQuery(target.value)}
-            onClearSearch={onClearSearch}
-          />
-          <Button
-            size="lg"
-            className="h-10"
-            aria-label="New note"
-            onClick={openAddModal}
-          >
-            <Plus />
-            <span className="hidden sm:inline">New note</span>
-          </Button>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-10 flex-1 md:w-80" />
+              <Skeleton className="h-10 w-9.5 sm:w-27" />
+            </>
+          ) : (
+            <>
+              <SearchBar
+                className="flex-1 md:w-80"
+                value={searchQuery}
+                onChange={({ target }) => setSearchQuery(target.value)}
+                onClearSearch={onClearSearch}
+              />
+              <Button
+                size="lg"
+                className="h-10"
+                aria-label="New note"
+                onClick={openAddModal}
+              >
+                <Plus />
+                <span className="hidden sm:inline">New note</span>
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
