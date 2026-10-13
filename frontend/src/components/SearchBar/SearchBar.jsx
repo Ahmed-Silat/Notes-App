@@ -1,29 +1,31 @@
-import React from "react";
-import { FaMagnifyingGlass } from "react-icons/fa6";
-import { IoMdClose } from "react-icons/io";
+import { Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
-const SearchBar = ({ value, onChange, handleSearch, onClearSearch }) => {
+const SearchBar = ({ value, onChange, onClearSearch, className }) => {
   return (
-    <div className="flex items-center w-full sm:w-[28rem] md:w-[40rem] px-3 py-2 bg-gray-100 rounded-full shadow-inner">
-      <input
-        type="text"
+    <div className={cn("relative", className)}>
+      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        type="search"
         placeholder="Search notes..."
-        className="w-full text-sm bg-transparent outline-none placeholder-gray-500"
+        aria-label="Search notes"
+        className="h-10 bg-card pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden"
         value={value}
         onChange={onChange}
+        onKeyDown={(e) => e.key === "Escape" && onClearSearch()}
       />
 
       {value && (
-        <IoMdClose
-          className="text-gray-500 text-lg cursor-pointer hover:text-black mx-1 transition-colors"
+        <button
+          type="button"
           onClick={onClearSearch}
-        />
+          aria-label="Clear search"
+          className="absolute top-1/2 right-2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="size-3.5" />
+        </button>
       )}
-
-      <FaMagnifyingGlass
-        className="text-gray-500 text-lg cursor-pointer hover:text-black transition-colors"
-        onClick={handleSearch}
-      />
     </div>
   );
 };

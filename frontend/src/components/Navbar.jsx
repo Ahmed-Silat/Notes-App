@@ -1,19 +1,31 @@
-import { Layout, Dropdown, Avatar, Menu } from "antd";
-import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { LogOut } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { getInitials } from "../lib/helper";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { getErrorMessage, getInitials } from "@/lib/helper";
 import {
   signoutFailure,
   signoutStart,
   signoutSuccess,
-} from "../redux/user/userSlice";
-import { signout } from "../Service/AuthService";
-import toast from "react-hot-toast";
+} from "@/redux/user/userSlice";
+import { signout } from "@/Service/AuthService";
+import Logo from "@/components/Logo";
+import ThemeToggle from "@/components/ThemeToggle";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const { currentUser } = useSelector((state) => state.user);
   const userName = currentUser?.rest?.username || "--";
+  const email = currentUser?.rest?.email;
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -32,40 +44,56 @@ const Navbar = () => {
       dispatch(signoutSuccess());
       navigate("/login");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      toast.error(getErrorMessage(error));
       dispatch(signoutFailure(error.response?.data?.message));
     }
   };
 
-  const dropdownMenu = (
-    <Menu className="rounded-xl shadow-lg">
-      <Menu.Item key="profile" icon={<UserOutlined />}>
-        Profile
-      </Menu.Item>
-      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={onLogout}>
-        Logout
-      </Menu.Item>
-    </Menu>
-  );
-
   return (
-    <div className="flex justify-between items-center p-2 bg-gray-200">
-      <div className="font-bold text-xl">Good Notes</div>
+    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link to="/" aria-label="Good Notes home">
+          <Logo />
+        </Link>
 
-      <div>
-        <h1 className="text-lg font-semibold text-gray-700 m-0 capitalize">
-          {userName}
-        </h1>
-      </div>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
 
-      <div className="flex items-center">
-        <Dropdown overlay={dropdownMenu} placement="bottomRight" arrow>
-          <Avatar className="cursor-pointer ml-auto bg-[#1890ff]">
-            {getInitials(userName)}
-          </Avatar>
-        </Dropdown>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-10 gap-2 rounded-full pr-3 pl-1">
+                <Avatar>
+                  <AvatarFallback className="bg-brand text-xs font-semibold text-brand-foreground">
+                    {getInitials(userName)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden max-w-32 truncate text-sm font-medium capitalize sm:inline">
+                  {userName}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="flex flex-col gap-0.5">
+                <span className="truncate font-medium capitalize text-foreground">
+                  {userName}
+                </span>
+                {email && (
+                  <span className="truncate text-xs font-normal text-muted-foreground">
+                    {email}
+                  </span>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onSelect={onLogout}>
+                <LogOut />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
-    </div>
+    </header>
   );
 };
 
