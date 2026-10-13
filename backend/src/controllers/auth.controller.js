@@ -21,11 +21,19 @@ export const signup = asyncHandler(async (req, res) => {
 export const signin = asyncHandler(async (req, res) => {
   const { token, user } = await authService.signin(req.body);
 
-  res.cookie(COOKIE_NAME, token, cookieOptions).status(200).json({
-    success: true,
-    message: "Login Successful",
-    rest: user,
-  });
+  // maxAge makes it a persistent cookie, so the login survives closing the
+  // browser (a session cookie is dropped whenever a phone kills the browser)
+  res
+    .cookie(COOKIE_NAME, token, {
+      ...cookieOptions,
+      maxAge: authService.SESSION_DURATION_MS,
+    })
+    .status(200)
+    .json({
+      success: true,
+      message: "Login Successful",
+      rest: user,
+    });
 });
 
 export const signout = asyncHandler(async (req, res) => {

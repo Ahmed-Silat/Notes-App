@@ -12,7 +12,8 @@ const getOwnedNote = async (userId, noteId) => {
   }
 
   if (note.userId !== userId) {
-    throw new ApiError(401, "You can only update your own note!");
+    // 403, not 401: the user is logged in, just not allowed to touch this note
+    throw new ApiError(403, "You can only update your own note!");
   }
 
   return note;

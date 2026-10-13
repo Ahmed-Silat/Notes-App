@@ -1,57 +1,36 @@
-import axios from "axios";
-
-const EXPRESS_API_URI = import.meta.env.VITE_API_BASE_URI;
+import { api } from "@/lib/api";
 
 // One page of notes: { notes, total, nextCursor }
 export const getUserAllNotes = async ({ limit, cursor } = {}) => {
-  const data = await axios.get(`${EXPRESS_API_URI}/api/note/all`, {
-    params: { limit, cursor },
-    withCredentials: true,
-  });
+  const data = await api.get("/note/all", { params: { limit, cursor } });
   return data;
 };
 
 export const createNotes = async (title, content, tags) => {
-  const res = await axios.post(
-    `${EXPRESS_API_URI}/api/note/add`,
-    { title, content, tags },
-    { withCredentials: true }
-  );
+  const res = await api.post("/note/add", { title, content, tags });
   return res;
 };
 
 export const updateUserNotes = async (noteId, title, content, tags) => {
-  const data = await axios.put(
-    `${EXPRESS_API_URI}/api/note/edit/${noteId}`,
-    { title, content, tags },
-    { withCredentials: true }
-  );
+  const data = await api.put(`/note/edit/${noteId}`, { title, content, tags });
   return data;
 };
 
 export const deleteUserNotes = async (noteId) => {
-  const data = await axios.delete(
-    `${EXPRESS_API_URI}/api/note/delete/${noteId}`,
-    { withCredentials: true }
-  );
+  const data = await api.delete(`/note/delete/${noteId}`);
   return data;
 };
 
 export const getUserSearchNotes = async (query, { limit, cursor } = {}) => {
-  const data = await axios.get(`${EXPRESS_API_URI}/api/note/search`, {
+  const data = await api.get("/note/search", {
     params: { query, limit, cursor },
-    withCredentials: true,
   });
   return data;
 };
 
 export const updatePinnedNotes = async (noteData) => {
-  const noteId = noteData._id;
-
-  const data = await axios.put(
-    `${EXPRESS_API_URI}/api/note/update-note-pinned/${noteId}`,
-    { isPinned: !noteData.isPinned },
-    { withCredentials: true }
-  );
+  const data = await api.put(`/note/update-note-pinned/${noteData._id}`, {
+    isPinned: !noteData.isPinned,
+  });
   return data;
 };
