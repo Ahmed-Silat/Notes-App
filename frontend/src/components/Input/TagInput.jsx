@@ -1,24 +1,27 @@
 import { useState } from "react";
-import { MdAdd, MdClose } from "react-icons/md";
+import { Hash, Plus, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-const TagInput = ({ tags, setTags }) => {
+const TagInput = ({ id, tags, setTags }) => {
   const [inputValue, setInputValue] = useState("");
 
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
-  };
-
   const addNewTag = () => {
-    if (inputValue.trim() !== "") {
-      setTags([...tags, inputValue.trim()]);
-      setInputValue("");
+    const tag = inputValue.trim().replace(/^#+/, "");
+
+    if (tag && !tags.includes(tag)) {
+      setTags([...tags, tag]);
     }
+    setInputValue("");
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); // ⛔ stop form submission
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault(); // stop form submission
       addNewTag();
+    } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
+      setTags(tags.slice(0, -1));
     }
   };
 
@@ -27,41 +30,48 @@ const TagInput = ({ tags, setTags }) => {
   };
 
   return (
-    <div>
+    <div className="grid gap-3">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Hash className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id={id}
+            value={inputValue}
+            className="pl-9"
+            placeholder="Add a tag and press Enter"
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Add tag"
+          onClick={addNewTag}
+          disabled={!inputValue.trim()}
+        >
+          <Plus />
+        </Button>
+      </div>
+
       {tags?.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap mt-2">
-          {tags.map((tag, index) => (
-            <span
-              key={index}
-              className="flex items-center gap-2 text-sm text-slate-900 bg-slate-100 px-3 py-3 rounded"
-            >
-              # {tag}
-              <button onClick={() => handleRemoveTag(tag)}>
-                <MdClose />
+        <div className="flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="h-6 gap-1 pr-1 pl-2.5">
+              #{tag}
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag)}
+                aria-label={`Remove tag ${tag}`}
+                className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+              >
+                <X className="size-3" />
               </button>
-            </span>
+            </Badge>
           ))}
         </div>
       )}
-
-      <div className="flex items-center gap-4 mt-3">
-        <input
-          type="text"
-          value={inputValue}
-          className="text-sm bg-transparent border px-3 py-2 rounded outline-none"
-          placeholder="Add Tags"
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-        />
-
-        <button
-          type="button" // ✅ prevent form submit
-          className="w-8 h-8 flex items-center justify-center rounded border border-blue-700 hover:bg-blue-700"
-          onClick={addNewTag}
-        >
-          <MdAdd className="text-2xl text-blue-700 hover:text-white" />
-        </button>
-      </div>
     </div>
   );
 };

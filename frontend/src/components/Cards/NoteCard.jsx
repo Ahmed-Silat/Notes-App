@@ -1,9 +1,31 @@
-import React from "react";
-import { MdCreate, MdDelete, MdOutlinePushPin } from "react-icons/md";
-import moment from "moment";
-import { Tooltip } from "antd";
-import { IoArchiveOutline } from "react-icons/io5";
-import { BiBellPlus } from "react-icons/bi";
+import { Archive, BellPlus, Pencil, Pin, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { formatDate, htmlToText } from "@/lib/helper";
+import { cn } from "@/lib/utils";
+
+const ActionButton = ({ label, onClick, className, children }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={label}
+        onClick={onClick}
+        className={cn("relative z-10 text-muted-foreground", className)}
+      >
+        {children}
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>{label}</TooltipContent>
+  </Tooltip>
+);
 
 const NoteCard = ({
   title,
@@ -15,84 +37,82 @@ const NoteCard = ({
   onEdit,
   onDelete,
 }) => {
-  return (
-    <div className="relative border rounded-2xl p-5 shadow-sm hover:shadow-lg hover:scale-[1.01] transition-all duration-200 ease-in-out w-full max-w-sm sm:max-w-md md:max-w-full bg-[#f5f5dc]">
-      {/* Pin Button */}
-      <Tooltip title={isPinned ? "Unpin Note" : "Pin Note"}>
-        <button
-          onClick={onPinNote}
-          className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
-            isPinned ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-400"
-          } hover:bg-blue-200`}
-        >
-          <MdOutlinePushPin size={18} />
-        </button>
-      </Tooltip>
+  const preview = htmlToText(content);
 
-      {/* Title & Date */}
-      <div className="mb-3">
-        <h6 className="text-base font-semibold text-gray-800 break-words pr-8 truncate">
-          {title}
-        </h6>
-        <span className="text-xs text-[#415d43]">
-          {moment(date).format("Do MMM YYYY")}
-        </span>
+  return (
+    <Card
+      className={cn(
+        "group relative gap-3 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg has-[button:focus-visible]:ring-2 has-[button:focus-visible]:ring-ring/50",
+        isPinned && "ring-brand/50 dark:ring-brand/40"
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        {/* Stretched button: makes the whole card open the editor */}
+        <button
+          type="button"
+          onClick={onEdit}
+          className="text-left outline-none after:absolute after:inset-0 after:rounded-xl"
+        >
+          <h3 className="line-clamp-2 text-base font-semibold wrap-break-word">
+            {title}
+          </h3>
+        </button>
+
+        <ActionButton
+          label={isPinned ? "Unpin note" : "Pin note"}
+          onClick={onPinNote}
+          className={cn(
+            "-mt-1 -mr-1 shrink-0",
+            isPinned
+              ? "text-brand hover:text-brand"
+              : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+          )}
+        >
+          <Pin className={cn(isPinned && "fill-current")} />
+        </ActionButton>
       </div>
 
-      {/* Content Preview */}
-      <p
-        className="text-sm text-gray-700 line-clamp-1"
-        dangerouslySetInnerHTML={{ __html: content }}
-      ></p>
+      {preview && (
+        <p className="line-clamp-5 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+          {preview}
+        </p>
+      )}
 
-      {/* Tags & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-2">
-        {/* Tags */}
-        <div className="flex gap-2 overflow-hidden whitespace-nowrap text-ellipsis">
-          {tags.map((item, idx) => (
-            <span
-              key={idx}
-              className="px-2 py-0.5 bg-gray-100 text-xs text-gray-600 rounded-full inline-block"
-            >
-              #{item}
-            </span>
+      {tags?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="font-normal">
+              #{tag}
+            </Badge>
           ))}
         </div>
+      )}
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          <Tooltip title="Set Reminder">
-            <button className="p-2 rounded-full hover:bg-yellow-100 text-gray-900 hover:text-yellow-600 transition">
-              <BiBellPlus size={18} className="font-bold" />
-            </button>
-          </Tooltip>
+      <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+        <time dateTime={date} className="text-xs text-muted-foreground">
+          {formatDate(date)}
+        </time>
 
-          <Tooltip title="Archive Note">
-            <button className="p-2 rounded-full hover:bg-blue-100 text-gray-900 hover:text-blue-600 transition">
-              <IoArchiveOutline size={18} className="font-bold" />
-            </button>
-          </Tooltip>
-
-          <Tooltip title="Edit Note">
-            <button
-              onClick={onEdit}
-              className="p-2 rounded-full hover:bg-green-100 text-gray-600 hover:text-green-600 transition"
-            >
-              <MdCreate size={18} />
-            </button>
-          </Tooltip>
-
-          <Tooltip title="Delete Note">
-            <button
-              onClick={onDelete}
-              className="p-2 rounded-full hover:bg-red-100 text-gray-600 hover:text-red-600 transition"
-            >
-              <MdDelete size={18} />
-            </button>
-          </Tooltip>
+        <div className="flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-has-[button:focus-visible]:opacity-100">
+          <ActionButton label="Set reminder">
+            <BellPlus />
+          </ActionButton>
+          <ActionButton label="Archive note">
+            <Archive />
+          </ActionButton>
+          <ActionButton label="Edit note" onClick={onEdit}>
+            <Pencil />
+          </ActionButton>
+          <ActionButton
+            label="Delete note"
+            onClick={onDelete}
+            className="hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 />
+          </ActionButton>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

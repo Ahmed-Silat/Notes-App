@@ -8,6 +8,18 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   MONGO_URI: z.string().min(1, "MONGO_URI is required"),
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
+  // Optional comma-separated DNS servers, e.g. "1.1.1.1,8.8.8.8". Needed on
+  // Windows with Node 24, which can pick 127.0.0.1 as its DNS server and then
+  // fail the SRV lookup for "mongodb+srv://" URIs (querySrv ECONNREFUSED).
+  DNS_SERVERS: z
+    .string()
+    .optional()
+    .transform((value) =>
+      value
+        ?.split(",")
+        .map((server) => server.trim())
+        .filter(Boolean)
+    ),
 });
 
 const parsed = envSchema.safeParse(process.env);
