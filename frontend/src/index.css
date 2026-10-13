@@ -138,6 +138,14 @@
     }
 }
 
+/* Theme switch: ThemeToggle animates the new theme in as a growing circle, so
+   turn off the browser's default cross-fade between the two snapshots. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 /* Rich-text editor (react-quill-new, snow theme) mapped onto the shadcn tokens.
    Kept outside @layer so these win over quill.snow.css, which is unlayered. */
   .note-editor .ql-toolbar.ql-snow {
