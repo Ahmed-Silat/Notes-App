@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import BackToTop from "@/components/BackToTop";
 
 // Shell for the signed-in pages; sends signed-out users to the login page.
 const AppLayout = () => {
@@ -18,9 +19,15 @@ const AppLayout = () => {
       {/* inert: nothing behind the overlay can be clicked, focused or typed into */}
       <div inert={isLoggingOut} aria-busy={isLoggingOut}>
         <Navbar onLoggingOutChange={setIsLoggingOut} />
-        <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+        <main
+          id="main-content"
+          // focusable from code, so "Back to top" can move keyboard focus here
+          tabIndex={-1}
+          className="mx-auto w-full max-w-6xl px-4 py-8 outline-none sm:px-6 sm:py-10"
+        >
           <Outlet />
         </main>
+        <BackToTop focusTargetId="main-content" />
       </div>
 
       {isLoggingOut && <LoadingOverlay label="Logging out..." />}
