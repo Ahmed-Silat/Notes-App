@@ -80,7 +80,7 @@ const Navbar = ({ onLoggingOutChange }) => {
 
             <DropdownMenuContent
               align="end"
-              className="w-56 ease-out data-open:duration-200 data-closed:duration-150 motion-reduce:animate-none! motion-reduce:transition-none!"
+              className="w-56 ease-out data-open:duration-200 data-closed:duration-450 motion-reduce:animate-none! motion-reduce:transition-none!"
             >
               <DropdownMenuLabel className="flex flex-col gap-0.5">
                 <span className="truncate font-medium capitalize text-foreground">

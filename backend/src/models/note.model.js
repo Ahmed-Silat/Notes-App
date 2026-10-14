@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { htmlToText } from "../utils/htmlToText.js";
 
 const noteSchema = new mongoose.Schema({
   title: {
@@ -8,6 +9,13 @@ const noteSchema = new mongoose.Schema({
   content: {
     type: String,
     required: true,
+  },
+  // plain text of `content` (no HTML tags or &nbsp;), kept in sync on save and
+  // used for searching; not sent to the client
+  contentText: {
+    type: String,
+    default: "",
+    select: false,
   },
   tags: {
     type: [String],
@@ -25,6 +33,12 @@ const noteSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+});
+
+noteSchema.pre("save", function () {
+  if (this.isModified("content")) {
+    this.contentText = htmlToText(this.content);
+  }
 });
 
 // matches the list sort (pinned, newest, _id) so each page is a fast index scan
