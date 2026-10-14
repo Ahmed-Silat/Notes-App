@@ -1,3 +1,4 @@
+import { saveStateNow } from "@/redux/store";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,6 +45,7 @@ const Login = () => {
 
       toast.success("Welcome back!");
       dispatch(signInSuccess(res.data));
+      await saveStateNow();
       navigate("/");
     } catch (error) {
       const message = getErrorMessage(error);

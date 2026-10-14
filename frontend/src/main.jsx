@@ -4,7 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./index.css";
 import App from "./App.jsx";
 import { Provider } from "react-redux";
-import { persistor, store } from "./redux/store.js";
+import { persistor, saveStateNow, store } from "./redux/store.js";
 import { PersistGate } from "redux-persist/integration/react";
 import { toast } from "sonner";
 import { onSessionExpired } from "./lib/api";
@@ -16,6 +16,7 @@ onSessionExpired(() => {
   if (!store.getState().user.currentUser) return false;
 
   store.dispatch(signoutSuccess());
+  saveStateNow();
   // the id stops several failing requests from stacking duplicate toasts
   toast.error("Your session has expired. Please log in again.", {
     id: "session-expired",
