@@ -14,6 +14,14 @@ const envSchema = z.object({
   // public URL the auth routes are reached at (the frontend's domain when the
   // API goes through its /api rewrite); optional for local development
   BETTER_AUTH_URL: z.url().optional(),
+  // Outgoing email (password reset links) over SMTP; works with Gmail (app
+  // password), Resend, SendGrid, Brevo, ... Without SMTP_HOST, emails are
+  // printed to the console in development instead of being sent.
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  EMAIL_FROM: z.string().default("Good Notes <no-reply@goodnotes.app>"),
   // Optional comma-separated DNS servers, e.g. "1.1.1.1,8.8.8.8". Needed on
   // Windows with Node 24, which can pick 127.0.0.1 as its DNS server and then
   // fail the SRV lookup for "mongodb+srv://" URIs (querySrv ECONNREFUSED).

@@ -4,9 +4,12 @@ import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { CORS_ORIGINS, env } from "./env.js";
+import { resetPasswordEmail } from "../emails/resetPasswordEmail.js";
+import { sendEmail } from "../utils/mailer.js";
 
 const SESSION_DAYS = 7;
 const DAY_SECONDS = 24 * 60 * 60;
+const RESET_LINK_MINUTES = 60;
 
 const normalizeName = (name) =>
   typeof name === "string" ? name.trim().toLowerCase() : name;
@@ -36,6 +39,21 @@ const createAuth = () =>
         hash: (password) => bcryptjs.hash(password, 10),
         verify: ({ hash, password }) => bcryptjs.compare(password, hash),
       },
+
+      // Forgot password: the emailed link is single-use and expires
+      resetPasswordTokenExpiresIn: RESET_LINK_MINUTES * 60,
+      sendResetPassword: async ({ user, url }) => {
+        await sendEmail({
+          to: user.email,
+          ...resetPasswordEmail({
+            name: user.name,
+            url,
+            expiresInMinutes: RESET_LINK_MINUTES,
+          }),
+        });
+      },
+      // a reset logs the account out everywhere, in case someone else was in
+      revokeSessionsOnPasswordReset: true,
     },
 
     session: {

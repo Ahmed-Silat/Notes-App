@@ -80,6 +80,13 @@ const Login = () => {
             error={errors.password?.message}
           />
 
+          <Link
+            to="/forgot-password"
+            className="-mt-3 justify-self-end text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Forgot password?
+          </Link>
+
           <Button
             type="submit"
             size="lg"
