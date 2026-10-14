@@ -21,6 +21,7 @@ import NoteCard from "@/components/Cards/NoteCard";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import SearchBar from "@/components/SearchBar/SearchBar";
 import AddEditNotes from "./AddEditNotes";
+import ViewNote from "./ViewNote";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -250,6 +251,10 @@ const Home = () => {
   const openAddModal = () =>
     setOpenAddEditModal({ isShown: true, type: "add", data: null });
 
+  const handleView = (noteDetails) => {
+    setOpenAddEditModal({ isShown: true, data: noteDetails, type: "view" });
+  };
+
   const handleEdit = (noteDetails) => {
     setOpenAddEditModal({ isShown: true, data: noteDetails, type: "edit" });
   };
@@ -306,6 +311,7 @@ const Home = () => {
         tags={note.tags}
         isPinned={note.isPinned}
         busyLabel={busyNotes[note._id]}
+        onOpen={() => handleView(note)}
         onEdit={() => handleEdit(note)}
         onDelete={() => setDeleteDialog({ open: true, note })}
         onPinNote={() => updateIsPinned(note)}
@@ -443,7 +449,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* Add / edit note */}
+      {/* View / add / edit note */}
       <Dialog
         open={openAddEditModal.isShown}
         onOpenChange={(open) => !open && closeModal()}
@@ -452,17 +458,31 @@ const Home = () => {
           className="max-h-[92svh] overflow-y-auto sm:max-w-2xl"
           // focus the title without selecting it, so it is not overwritten by accident
           onOpenAutoFocus={(e) => {
+            if (openAddEditModal.type === "view") return;
             e.preventDefault();
             document.getElementById("note-title")?.focus();
           }}
         >
-          <AddEditNotes
-            key={openAddEditModal.data?._id ?? "new"}
-            onClose={closeModal}
-            noteData={openAddEditModal.data}
-            type={openAddEditModal.type}
-            getAllNotes={getAllNotes}
-          />
+          {openAddEditModal.type === "view" ? (
+            <ViewNote
+              note={openAddEditModal.data}
+              onEdit={() => {
+                handleEdit(openAddEditModal.data);
+                // the Edit button is gone after the switch; move focus to the form
+                requestAnimationFrame(() =>
+                  document.getElementById("note-title")?.focus()
+                );
+              }}
+            />
+          ) : (
+            <AddEditNotes
+              key={openAddEditModal.data?._id ?? "new"}
+              onClose={closeModal}
+              noteData={openAddEditModal.data}
+              type={openAddEditModal.type}
+              getAllNotes={getAllNotes}
+            />
+          )}
         </DialogContent>
       </Dialog>
 

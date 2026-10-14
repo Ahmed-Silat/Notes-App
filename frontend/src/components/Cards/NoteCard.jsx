@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { formatDate, htmlToText } from "@/lib/helper";
 import { cn } from "@/lib/utils";
+import NoteContent from "@/components/NoteContent/NoteContent";
 
 const ActionButton = ({ label, onClick, className, children }) => (
   <Tooltip>
@@ -42,10 +43,11 @@ const NoteCard = ({
   isPinned,
   busyLabel,
   onPinNote,
+  onOpen,
   onEdit,
   onDelete,
 }) => {
-  const preview = htmlToText(content);
+  const hasContent = Boolean(htmlToText(content));
   const isBusy = Boolean(busyLabel);
 
   return (
@@ -59,10 +61,10 @@ const NoteCard = ({
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        {/* Stretched button: makes the whole card open the editor */}
+        {/* Stretched button: makes the whole card open the note in view mode */}
         <button
           type="button"
-          onClick={onEdit}
+          onClick={onOpen}
           className="text-left outline-none after:absolute after:inset-0 after:rounded-xl"
         >
           <h3 className="line-clamp-2 text-base font-semibold wrap-break-word">
@@ -84,10 +86,12 @@ const NoteCard = ({
         </ActionButton>
       </div>
 
-      {preview && (
-        <p className="line-clamp-5 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
-          {preview}
-        </p>
+      {hasContent && (
+        <NoteContent
+          html={content}
+          compact
+          className="line-clamp-6 text-sm text-muted-foreground"
+        />
       )}
 
       {tags?.length > 0 && (

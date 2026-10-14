@@ -198,3 +198,57 @@
   .note-editor .ql-snow .ql-tooltip input[type="text"] {
     @apply rounded-sm border-input bg-transparent;
   }
+
+/* Read-only note content (NoteContent): the editor's HTML with its formatting.
+   Text without a color of its own inherits the surrounding color. */
+  .note-content {
+    @apply leading-relaxed break-words whitespace-pre-wrap;
+  }
+  .note-content > * + * {
+    @apply mt-1;
+  }
+  .note-content p:empty::after {
+    content: "\00a0";
+  }
+  .note-content h1 { @apply text-2xl font-semibold; }
+  .note-content h2 { @apply text-xl font-semibold; }
+  .note-content h3 { @apply text-lg font-semibold; }
+  .note-content h4 { @apply text-base font-semibold; }
+  .note-content h5 { @apply text-sm font-semibold; }
+  .note-content-compact :is(h1, h2, h3) { @apply text-base; }
+  .note-content-compact :is(h4, h5) { @apply text-sm; }
+  .note-content ul { @apply list-disc pl-6; }
+  .note-content ol { @apply list-decimal pl-6; }
+  .note-content li > :is(ul, ol) { @apply mt-1; }
+  .note-content ul ul { list-style-type: circle; }
+  .note-content ul ul ul { list-style-type: square; }
+  .note-content ol ol { list-style-type: lower-alpha; }
+  .note-content ol ol ol { list-style-type: lower-roman; }
+  .note-content blockquote {
+    @apply border-l-4 border-border pl-4 italic;
+  }
+  .note-content pre {
+    @apply rounded-md bg-muted px-3 py-2 font-mono text-[0.9em];
+  }
+  .note-content code {
+    @apply rounded-sm bg-muted px-1 font-mono text-[0.9em];
+  }
+  .note-content a {
+    @apply text-brand underline underline-offset-2;
+  }
+  .note-content .ql-align-center { @apply text-center; }
+  .note-content .ql-align-right { @apply text-right; }
+  .note-content .ql-align-justify { @apply text-justify; }
+  .note-content .ql-indent-1 { padding-left: 3em; }
+  .note-content .ql-indent-2 { padding-left: 6em; }
+  .note-content .ql-indent-3 { padding-left: 9em; }
+  .note-content .ql-indent-4 { padding-left: 12em; }
+  .note-content .ql-indent-5 { padding-left: 15em; }
+  .note-content .ql-indent-6 { padding-left: 18em; }
+  .note-content .ql-indent-7 { padding-left: 21em; }
+  .note-content .ql-indent-8 { padding-left: 24em; }
+  /* highlighted text keeps dark text in dark mode, so it stays readable on the
+     light highlight colors (unless the text has a color of its own) */
+  .dark .note-content [style*="background-color"]:not([style^="color"], [style*=" color"]) {
+    color: oklch(0.145 0 0);
+  }
