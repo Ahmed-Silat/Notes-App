@@ -1,16 +1,34 @@
-import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
+
+// Login, sign-up and logout go through Better Auth. They resolve to the same
+// shape the pages already use ({ data: { success, message, rest } }) and throw
+// an Error with Better Auth's message when the request fails.
+
+const unwrap = ({ data, error }) => {
+  if (error) {
+    throw new Error(error.message || error.statusText || "Something went wrong");
+  }
+  return data;
+};
+
+const toUser = (user) => ({
+  _id: user.id,
+  username: user.name,
+  email: user.email,
+  createdAt: user.createdAt,
+});
 
 export const login = async (email, password) => {
-  const data = await api.post("/auth/signin", { email, password });
-  return data;
+  const { user } = unwrap(await authClient.signIn.email({ email, password }));
+  return { data: { success: true, message: "Login Successful", rest: toUser(user) } };
 };
 
 export const singnUp = async (username, email, password) => {
-  const data = await api.post("/auth/signup", { username, email, password });
-  return data;
+  unwrap(await authClient.signUp.email({ name: username, email, password }));
+  return { data: { success: true, message: "User Created Successfully" } };
 };
 
 export const signout = async () => {
-  const data = await api.get("/auth/signout");
-  return data;
+  unwrap(await authClient.signOut());
+  return { data: { success: true, message: "User logged out successfully" } };
 };
