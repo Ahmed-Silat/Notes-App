@@ -7,7 +7,13 @@ const envSchema = z.object({
     .default("development"),
   PORT: z.coerce.number().int().positive().default(3000),
   MONGO_URI: z.string().min(1, "MONGO_URI is required"),
-  JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
+  // signs Better Auth's session cookies; generate with `openssl rand -base64 32`
+  BETTER_AUTH_SECRET: z
+    .string({ error: "BETTER_AUTH_SECRET is required" })
+    .min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
+  // public URL the auth routes are reached at (the frontend's domain when the
+  // API goes through its /api rewrite); optional for local development
+  BETTER_AUTH_URL: z.url().optional(),
   // Optional comma-separated DNS servers, e.g. "1.1.1.1,8.8.8.8". Needed on
   // Windows with Node 24, which can pick 127.0.0.1 as its DNS server and then
   // fail the SRV lookup for "mongodb+srv://" URIs (querySrv ECONNREFUSED).
@@ -36,6 +42,5 @@ export const env = parsed.data;
 
 export const CORS_ORIGINS = [
   "http://localhost:5173",
-  "*",
   "https://notes-app-frontend-abwb.onrender.com",
 ];
