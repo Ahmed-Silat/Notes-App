@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-// Mirrors backend/src/dtos/auth.dto.js so both sides enforce the same rules.
+// Same rules the backend enforces (backend/src/config/auth.js): lowercase
+// emails and passwords of at least 6 characters.
 
 const email = z
   .string()
@@ -8,6 +9,23 @@ const email = z
   .toLowerCase()
   .min(1, "Email is required")
   .pipe(z.email("Invalid email"));
+
+const newPassword = z
+  .string()
+  .min(1, "Password is required")
+  .min(6, "Password must be at least 6 characters");
+
+const confirmPassword = z.string().min(1, "Confirm Password is required");
+
+const passwordsMatch = [
+  (data) => data.password === data.confirmPassword,
+  {
+    error: "Passwords must match",
+    path: ["confirmPassword"],
+    // check the match as soon as both password fields are filled in
+    when: ({ value }) => Boolean(value?.password && value?.confirmPassword),
+  },
+];
 
 export const loginSchema = z.object({
   email,
@@ -18,15 +36,13 @@ export const signupSchema = z
   .object({
     name: z.string().trim().min(1, "Full Name is required"),
     email,
-    password: z
-      .string()
-      .min(1, "Password is required")
-      .min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(1, "Confirm Password is required"),
+    password: newPassword,
+    confirmPassword,
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    error: "Passwords must match",
-    path: ["confirmPassword"],
-    // check the match as soon as both password fields are filled in
-    when: ({ value }) => Boolean(value?.password && value?.confirmPassword),
-  });
+  .refine(...passwordsMatch);
+
+export const forgotPasswordSchema = z.object({ email });
+
+export const resetPasswordSchema = z
+  .object({ password: newPassword, confirmPassword })
+  .refine(...passwordsMatch);

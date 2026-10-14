@@ -28,6 +28,21 @@ export const singnUp = async (username, email, password) => {
   return { data: { success: true, message: "User Created Successfully" } };
 };
 
+// Emails a reset link. Succeeds whether or not the email has an account, so
+// the form can't be used to find out who is registered.
+export const requestPasswordReset = async (email) => {
+  unwrap(
+    await authClient.requestPasswordReset({
+      email,
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+  );
+};
+
+export const resetPassword = async (token, newPassword) => {
+  unwrap(await authClient.resetPassword({ token, newPassword }));
+};
+
 export const signout = async () => {
   unwrap(await authClient.signOut());
   return { data: { success: true, message: "User logged out successfully" } };

@@ -6,6 +6,8 @@ import RouteTitleHandler from "./components/RouteTitle/RouteTitleHandler";
 import Reminders from "./pages/Reminders/Reminders";
 import Archive from "./pages/Archive/Archive";
 import NotFound from "./pages/NotFound/NotFound";
+import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword/ResetPassword";
 import AppLayout from "./components/layout/AppLayout";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -23,6 +25,8 @@ const App = () => {
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           {/* any other URL (e.g. /index.html or a typo) */}
           <Route path="*" element={<NotFound />} />
         </Routes>

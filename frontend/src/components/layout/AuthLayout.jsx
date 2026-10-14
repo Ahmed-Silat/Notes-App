@@ -31,11 +31,17 @@ const PreviewNote = ({ title, lines, tag, pinned, className }) => (
   </div>
 );
 
-// Split-screen layout for the login and sign-up pages.
-const AuthLayout = ({ title, description, children }) => {
+// Split-screen layout for the login, sign-up and password pages.
+const AuthLayout = ({
+  title,
+  description,
+  children,
+  // the reset-password link must work even for someone logged in on this device
+  redirectIfSignedIn = true,
+}) => {
   const { currentUser } = useSelector((state) => state.user);
 
-  if (currentUser) {
+  if (currentUser && redirectIfSignedIn) {
     return <Navigate to="/" replace />;
   }
 
