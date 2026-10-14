@@ -1,3 +1,4 @@
+import { saveStateNow } from "@/redux/store";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -36,6 +37,7 @@ const ResetPassword = () => {
       await resetPassword(token, password);
       // the reset logged this account out everywhere, including here
       dispatch(signoutSuccess());
+      await saveStateNow();
       toast.success("Password updated. Log in with your new password.");
       navigate("/login", { replace: true });
     } catch (error) {

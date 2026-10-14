@@ -2,7 +2,6 @@ import bcryptjs from "bcryptjs";
 import mongoose from "mongoose";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { APIError, createAuthMiddleware } from "better-auth/api";
 import { CORS_ORIGINS, env } from "./env.js";
 import { resetPasswordEmail } from "../emails/resetPasswordEmail.js";
 import { sendEmail } from "../utils/mailer.js";
@@ -32,8 +31,9 @@ const createAuth = () =>
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 6,
-      // keep the sign-up -> log in flow the frontend already has
-      autoSignIn: false,
+      // signing up also logs the user in, straight to their notes. (With this
+      // on, Better Auth also rejects an already-registered email clearly.)
+      autoSignIn: true,
       // bcrypt, as before, so existing users' passwords keep working
       password: {
         hash: (password) => bcryptjs.hash(password, 10),
@@ -60,22 +60,6 @@ const createAuth = () =>
       expiresIn: SESSION_DAYS * DAY_SECONDS,
       // an active user's session is extended at most once a day
       updateAge: DAY_SECONDS,
-    },
-
-    hooks: {
-      // With autoSignIn off, Better Auth answers a sign-up for an existing
-      // email with a fake success (to hide which emails are registered). Keep
-      // the app's clear "already exists" message instead.
-      before: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== "/sign-up/email") return;
-
-        const email = String(ctx.body?.email ?? "").trim().toLowerCase();
-        if (email && (await ctx.context.internalAdapter.findUserByEmail(email))) {
-          throw new APIError("UNPROCESSABLE_ENTITY", {
-            message: "An account with this email already exists",
-          });
-        }
-      }),
     },
 
     databaseHooks: {

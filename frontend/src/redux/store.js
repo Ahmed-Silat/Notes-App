@@ -25,3 +25,8 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
+
+// Saves the latest state to localStorage right away. redux-persist normally
+// writes a moment after a change, so reloading just after logging in or out
+// could otherwise bring back the previous login state.
+export const saveStateNow = () => persistor.flush();

@@ -23,9 +23,14 @@ export const login = async (email, password) => {
   return { data: { success: true, message: "Login Successful", rest: toUser(user) } };
 };
 
+// Creates the account and logs the user in (the backend has autoSignIn on).
 export const singnUp = async (username, email, password) => {
-  unwrap(await authClient.signUp.email({ name: username, email, password }));
-  return { data: { success: true, message: "User Created Successfully" } };
+  const { user } = unwrap(
+    await authClient.signUp.email({ name: username, email, password })
+  );
+  return {
+    data: { success: true, message: "Account created", rest: toUser(user) },
+  };
 };
 
 // Emails a reset link. Succeeds whether or not the email has an account, so

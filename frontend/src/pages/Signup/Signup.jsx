@@ -1,4 +1,7 @@
+import { saveStateNow } from "@/redux/store";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { signInSuccess } from "@/redux/user/userSlice";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -12,11 +15,11 @@ import { Button } from "@/components/ui/button";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(signupSchema),
@@ -33,9 +36,11 @@ const Signup = () => {
         return;
       }
 
-      toast.success(res.data.message);
-      reset();
-      navigate("/login");
+      // signing up also logged the user in, so go straight to their notes
+      dispatch(signInSuccess(res.data));
+      await saveStateNow();
+      toast.success("Welcome to Good Notes!");
+      navigate("/", { replace: true });
     } catch (error) {
       toast.error(getErrorMessage(error));
     }

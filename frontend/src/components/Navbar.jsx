@@ -1,3 +1,4 @@
+import { saveStateNow } from "@/redux/store";
 import { LogOut } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -44,6 +45,7 @@ const Navbar = ({ onLoggingOutChange }) => {
 
       toast.success(res.data.message);
       dispatch(signoutSuccess());
+      await saveStateNow();
       navigate("/login");
     } catch (error) {
       toast.error(getErrorMessage(error));
