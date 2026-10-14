@@ -69,9 +69,10 @@ export const deleteNote = async (userId, noteId) => {
   await noteRepository.deleteById(noteId);
 };
 
+// "note  description" matches "Note Description": the words must appear in
+// order, with any amount of whitespace between them.
+const buildSearchRegex = (query) =>
+  new RegExp(query.trim().split(/\s+/).map(escapeRegex).join("\\s+"), "i");
+
 export const searchNotes = (userId, query, { cursor, limit }) =>
-  getPage(userId, {
-    search: new RegExp(escapeRegex(query), "i"),
-    cursor,
-    limit,
-  });
+  getPage(userId, { search: buildSearchRegex(query), cursor, limit });
