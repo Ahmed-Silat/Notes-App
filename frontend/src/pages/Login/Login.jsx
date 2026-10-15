@@ -1,5 +1,5 @@
 import { saveStateNow } from "@/redux/store";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import { getErrorMessage } from "@/lib/helper";
 import { loginSchema } from "@/schemas/auth.schema";
 import AuthLayout from "@/components/layout/AuthLayout";
 import FormField from "@/components/Input/FormField";
+import TextLink from "@/components/TextLink";
 import { Button } from "@/components/ui/button";
 
 const Login = () => {
@@ -82,12 +83,13 @@ const Login = () => {
             error={errors.password?.message}
           />
 
-          <Link
+          <TextLink
             to="/forgot-password"
+            disabled={isSubmitting}
             className="-mt-3 justify-self-end text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             Forgot password?
-          </Link>
+          </TextLink>
 
           <Button
             type="submit"
@@ -103,12 +105,13 @@ const Login = () => {
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link
+        <TextLink
           to="/signup"
+          disabled={isSubmitting}
           className="font-medium text-foreground underline-offset-4 hover:underline"
         >
           Sign up
-        </Link>
+        </TextLink>
       </p>
     </AuthLayout>
   );
