@@ -1,5 +1,6 @@
 import {
   Archive,
+  ArchiveRestore,
   BellPlus,
   Loader2,
   Pencil,
@@ -41,8 +42,11 @@ const NoteCard = ({
   content,
   tags,
   isPinned,
+  isArchived,
   busyLabel,
+  // optional: archived notes can't be pinned, so their cards have no pin button
   onPinNote,
+  onArchive,
   onOpen,
   onEdit,
   onDelete,
@@ -72,18 +76,20 @@ const NoteCard = ({
           </h3>
         </button>
 
-        <ActionButton
-          label={isPinned ? "Unpin note" : "Pin note"}
-          onClick={onPinNote}
-          className={cn(
-            "-mt-1 -mr-1 shrink-0",
-            isPinned
-              ? "text-brand hover:text-brand"
-              : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-          )}
-        >
-          <Pin className={cn(isPinned && "fill-current")} />
-        </ActionButton>
+        {onPinNote && (
+          <ActionButton
+            label={isPinned ? "Unpin note" : "Pin note"}
+            onClick={onPinNote}
+            className={cn(
+              "-mt-1 -mr-1 shrink-0",
+              isPinned
+                ? "text-brand hover:text-brand"
+                : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+            )}
+          >
+            <Pin className={cn(isPinned && "fill-current")} />
+          </ActionButton>
+        )}
       </div>
 
       {hasContent && (
@@ -113,8 +119,11 @@ const NoteCard = ({
           <ActionButton label="Set reminder">
             <BellPlus />
           </ActionButton>
-          <ActionButton label="Archive note">
-            <Archive />
+          <ActionButton
+            label={isArchived ? "Unarchive note" : "Archive note"}
+            onClick={onArchive}
+          >
+            {isArchived ? <ArchiveRestore /> : <Archive />}
           </ActionButton>
           <ActionButton label="Edit note" onClick={onEdit}>
             <Pencil />

@@ -11,19 +11,23 @@ export const findByIdAndUser = (id, userId) => Note.findOne({ _id: id, userId })
 // and pages never overlap or skip notes. Backed by the index on the model.
 const PAGE_SORT = { isPinned: -1, createdAt: -1, _id: -1 };
 
-// Search looks at the title, the plain text of the content (not its HTML, so
-// formatting and &nbsp; don't get in the way) and the tags.
-const userFilter = (userId, search) =>
-  search
+// The user's archived or unarchived notes. Search looks at the title, the
+// plain text of the content (not its HTML, so formatting and &nbsp; don't get
+// in the way) and the tags.
+const userFilter = (userId, { search, archived = false }) => {
+  const filter = { userId, isArchived: archived };
+
+  return search
     ? {
-        userId,
+        ...filter,
         $or: [
           { title: { $regex: search } },
           { contentText: { $regex: search } },
           { tags: { $regex: search } },
         ],
       }
-    : { userId };
+    : filter;
+};
 
 // Notes that come after the cursor in PAGE_SORT order.
 const afterCursor = ({ isPinned, createdAt, id }) => {
@@ -38,20 +42,31 @@ const afterCursor = ({ isPinned, createdAt, id }) => {
 };
 
 // Fetches one extra note so the caller can tell whether another page exists.
-export const findPageByUser = (userId, { search, cursor, limit }) => {
-  const filter = userFilter(userId, search);
+export const findPageByUser = (userId, { search, archived, cursor, limit }) => {
+  const filter = userFilter(userId, { search, archived });
 
   return Note.find(cursor ? { $and: [filter, afterCursor(cursor)] } : filter)
     .sort(PAGE_SORT)
     .limit(limit + 1);
 };
 
-export const countByUser = (userId, { search } = {}) =>
-  Note.countDocuments(userFilter(userId, search));
+export const countByUser = (userId, { search, archived } = {}) =>
+  Note.countDocuments(userFilter(userId, { search, archived }));
 
 export const save = (note) => note.save();
 
 export const deleteById = (id) => Note.deleteOne({ _id: id });
+
+// Marks notes saved before archiving existed as not archived, so the list
+// filter (an exact match, which the index can use) finds them. Safe to run on
+// every start. Returns how many notes were updated.
+export const backfillIsArchived = async () => {
+  const result = await Note.updateMany(
+    { isArchived: { $exists: false } },
+    { $set: { isArchived: false } }
+  );
+  return result.modifiedCount;
+};
 
 // Fills in contentText for notes saved before it existed (or written without
 // the model's save hook). Safe to run on every start: only touches notes that

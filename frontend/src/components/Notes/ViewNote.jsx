@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-// Read-only view of a note, rendered inside the view <Dialog> on the Home page.
+// Read-only view of a note, rendered inside <NoteDialog>.
 const ViewNote = ({ note, onEdit }) => (
   <>
     <DialogHeader className="pr-8">

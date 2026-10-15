@@ -25,6 +25,12 @@ const noteSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // archived notes leave the main list for the Archive page; an archived note
+  // is never pinned
+  isArchived: {
+    type: Boolean,
+    default: false,
+  },
   userId: {
     type: String,
     required: true,
@@ -41,8 +47,9 @@ noteSchema.pre("save", function () {
   }
 });
 
-// matches the list sort (pinned, newest, _id) so each page is a fast index scan
-noteSchema.index({ userId: 1, isPinned: -1, createdAt: -1, _id: -1 });
+// matches the list filter (user, archived or not) and sort (pinned, newest,
+// _id) so each page is a fast index scan
+noteSchema.index({ userId: 1, isArchived: 1, isPinned: -1, createdAt: -1, _id: -1 });
 
 const Note = mongoose.model("Note", noteSchema);
 

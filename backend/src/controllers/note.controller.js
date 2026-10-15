@@ -63,6 +63,20 @@ export const updateNotePinned = asyncHandler(async (req, res) => {
   });
 });
 
+export const updateNoteArchived = asyncHandler(async (req, res) => {
+  const note = await noteService.updateNoteArchived(
+    req.user.id,
+    req.params.noteId,
+    req.body.isArchived
+  );
+
+  res.status(200).json({
+    success: true,
+    message: note.isArchived ? "Note archived" : "Note unarchived",
+    note,
+  });
+});
+
 export const searchNote = asyncHandler(async (req, res) => {
   const { query, ...page } = req.query;
   const { notes, total, nextCursor } = await noteService.searchNotes(

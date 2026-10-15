@@ -35,7 +35,7 @@ const modules = {
   ],
 };
 
-// Form rendered inside the note editor <Dialog> on the Home page.
+// Add / edit form, rendered inside <NoteDialog>.
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const isEdit = type === "edit";
 

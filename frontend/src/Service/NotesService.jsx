@@ -6,6 +6,14 @@ export const getUserAllNotes = async ({ limit, cursor } = {}) => {
   return data;
 };
 
+// One page of archived notes: { notes, total, nextCursor }
+export const getUserArchivedNotes = async ({ limit, cursor } = {}) => {
+  const data = await api.get("/note/all", {
+    params: { limit, cursor, archived: true },
+  });
+  return data;
+};
+
 export const createNotes = async (title, content, tags) => {
   const res = await api.post("/note/add", { title, content, tags });
   return res;
@@ -31,6 +39,13 @@ export const getUserSearchNotes = async (query, { limit, cursor } = {}) => {
 export const updatePinnedNotes = async (noteData) => {
   const data = await api.put(`/note/update-note-pinned/${noteData._id}`, {
     isPinned: !noteData.isPinned,
+  });
+  return data;
+};
+
+export const updateArchivedNotes = async (noteData) => {
+  const data = await api.put(`/note/update-note-archived/${noteData._id}`, {
+    isArchived: !noteData.isArchived,
   });
   return data;
 };
