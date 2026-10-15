@@ -28,6 +28,8 @@ export const updateNote = async (userId, noteId, changes) => {
   for (const [key, value] of Object.entries(changes)) {
     if (value !== undefined) note[key] = value;
   }
+  // as in updateNotePinned: a pinned note can't stay archived
+  if (changes.isPinned) note.isArchived = false;
 
   return noteRepository.save(note);
 };
@@ -36,14 +38,26 @@ export const updateNotePinned = async (userId, noteId, isPinned) => {
   const note = await getOwnedNote(userId, noteId);
 
   note.isPinned = isPinned;
+  // pinning an archived note brings it back to the main list
+  if (isPinned) note.isArchived = false;
 
   return noteRepository.save(note);
 };
 
-const getPage = async (userId, { search, cursor, limit }) => {
+export const updateNoteArchived = async (userId, noteId, isArchived) => {
+  const note = await getOwnedNote(userId, noteId);
+
+  note.isArchived = isArchived;
+  // archived notes aren't pinned (the Archive page has no pinned section)
+  if (isArchived) note.isPinned = false;
+
+  return noteRepository.save(note);
+};
+
+const getPage = async (userId, { search, archived, cursor, limit }) => {
   const [notes, total] = await Promise.all([
-    noteRepository.findPageByUser(userId, { search, cursor, limit }),
-    noteRepository.countByUser(userId, { search }),
+    noteRepository.findPageByUser(userId, { search, archived, cursor, limit }),
+    noteRepository.countByUser(userId, { search, archived }),
   ]);
 
   const hasMore = notes.length > limit;
@@ -56,8 +70,8 @@ const getPage = async (userId, { search, cursor, limit }) => {
   };
 };
 
-export const getNotes = (userId, { cursor, limit }) =>
-  getPage(userId, { cursor, limit });
+export const getNotes = (userId, { archived, cursor, limit }) =>
+  getPage(userId, { archived, cursor, limit });
 
 export const deleteNote = async (userId, noteId) => {
   const note = await noteRepository.findByIdAndUser(noteId, userId);
@@ -74,5 +88,5 @@ export const deleteNote = async (userId, noteId) => {
 const buildSearchRegex = (query) =>
   new RegExp(query.trim().split(/\s+/).map(escapeRegex).join("\\s+"), "i");
 
-export const searchNotes = (userId, query, { cursor, limit }) =>
-  getPage(userId, { search: buildSearchRegex(query), cursor, limit });
+export const searchNotes = (userId, query, { archived, cursor, limit }) =>
+  getPage(userId, { search: buildSearchRegex(query), archived, cursor, limit });

@@ -1,7 +1,10 @@
 import app from "./src/app.js";
 import { connectDB } from "./src/config/db.js";
 import { env } from "./src/config/env.js";
-import { backfillContentText } from "./src/repositories/note.repository.js";
+import {
+  backfillContentText,
+  backfillIsArchived,
+} from "./src/repositories/note.repository.js";
 import { ensureCredentialAccounts } from "./src/repositories/user.repository.js";
 
 try {
@@ -27,6 +30,15 @@ try {
   if (updated > 0) console.log(`Prepared ${updated} notes for search`);
 } catch (err) {
   console.error("Failed to prepare notes for search", err);
+}
+
+// Notes saved before archiving existed need isArchived: false to show up in
+// the notes list. Does nothing once every note has it.
+try {
+  const updated = await backfillIsArchived();
+  if (updated > 0) console.log(`Prepared ${updated} notes for archiving`);
+} catch (err) {
+  console.error("Failed to prepare notes for archiving", err);
 }
 
 app.listen(env.PORT, () => {

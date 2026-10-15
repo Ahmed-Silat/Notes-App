@@ -1,9 +1,10 @@
 import { saveStateNow } from "@/redux/store";
-import { LogOut } from "lucide-react";
+import { Archive, LogOut, StickyNote } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getErrorMessage, getInitials } from "@/lib/helper";
+import { cn } from "@/lib/utils";
 import {
   signoutFailure,
   signoutStart,
@@ -22,6 +23,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+const NAV_LINKS = [
+  { to: "/", label: "Notes", icon: StickyNote },
+  { to: "/archive", label: "Archive", icon: Archive },
+];
 
 const Navbar = ({ onLoggingOutChange }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -59,9 +65,32 @@ const Navbar = ({ onLoggingOutChange }) => {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" aria-label="Good Notes home">
-          <Logo />
-        </Link>
+        <div className="flex items-center gap-3 sm:gap-6">
+          <Link to="/" aria-label="Good Notes home">
+            <Logo />
+          </Link>
+
+          <nav aria-label="Main" className="flex items-center gap-1">
+            {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end
+                aria-label={label}
+                className={({ isActive }) =>
+                  cn(
+                    "flex h-9 items-center gap-2 rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50",
+                    isActive && "bg-accent text-foreground"
+                  )
+                }
+              >
+                <Icon className="size-4" />
+                {/* icon only on phones, next to the logo */}
+                <span className="hidden sm:inline">{label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        </div>
 
         <div className="flex items-center gap-1">
           <ThemeToggle />

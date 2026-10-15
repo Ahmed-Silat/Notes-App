@@ -40,6 +40,10 @@ export const updateNoteDto = z
 
 export const updateNotePinnedDto = z.object({ isPinned });
 
+export const updateNoteArchivedDto = z.object({
+  isArchived: z.boolean({ error: "isArchived must be true or false" }),
+});
+
 export const NOTES_PAGE_SIZE = 24;
 export const NOTES_PAGE_SIZE_MAX = 100;
 
@@ -60,6 +64,10 @@ export const listNotesDto = z.object({
     .max(NOTES_PAGE_SIZE_MAX, `limit can be at most ${NOTES_PAGE_SIZE_MAX}`)
     .default(NOTES_PAGE_SIZE),
   cursor: cursor.optional(),
+  // ?archived=true lists (or searches) the archived notes instead
+  archived: z
+    .stringbool({ error: "archived must be true or false" })
+    .default(false),
 });
 
 export const searchNoteDto = listNotesDto.extend({
