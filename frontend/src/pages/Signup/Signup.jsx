@@ -1,5 +1,5 @@
 import { saveStateNow } from "@/redux/store";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { signInSuccess } from "@/redux/user/userSlice";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,7 @@ import { getErrorMessage } from "@/lib/helper";
 import { signupSchema } from "@/schemas/auth.schema";
 import AuthLayout from "@/components/layout/AuthLayout";
 import FormField from "@/components/Input/FormField";
+import TextLink from "@/components/TextLink";
 import { Button } from "@/components/ui/button";
 
 const Signup = () => {
@@ -108,12 +109,13 @@ const Signup = () => {
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link
+        <TextLink
           to="/login"
+          disabled={isSubmitting}
           className="font-medium text-foreground underline-offset-4 hover:underline"
         >
           Log in
-        </Link>
+        </TextLink>
       </p>
     </AuthLayout>
   );
