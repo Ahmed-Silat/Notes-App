@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { htmlToText } from "../utils/htmlToText.js";
+import { TITLE_COLLATION } from "../utils/noteSort.js";
 
 // Background colors a note can have. Names, not hex values, so the frontend can
 // pick a matching shade for light and dark mode (frontend/src/lib/noteColors.js).
@@ -57,17 +58,35 @@ const noteSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  // when the title, content or tags last changed (pinning, archiving and
+  // colors don't count), for the "recently edited" sort; set on save
+  editedAt: {
+    type: Date,
+  },
 });
 
 noteSchema.pre("save", function () {
   if (this.isModified("content")) {
     this.contentText = htmlToText(this.content);
   }
+
+  if (this.isNew) {
+    this.editedAt = this.createdAt;
+  } else if (["title", "content", "tags"].some((path) => this.isModified(path))) {
+    this.editedAt = new Date();
+  }
 });
 
-// matches the list filter (user, archived or not) and sort (pinned, newest,
-// _id) so each page is a fast index scan
-noteSchema.index({ userId: 1, isArchived: 1, isPinned: -1, createdAt: -1, _id: -1 });
+// One index per sort order (utils/noteSort.js), each matching the list filter
+// (user, archived or not) and the sort, so each page is a fast index scan.
+const LIST_KEYS = { userId: 1, isArchived: 1, isPinned: -1 };
+noteSchema.index({ ...LIST_KEYS, createdAt: -1, _id: -1 }); // newest
+noteSchema.index({ ...LIST_KEYS, createdAt: 1, _id: 1 }); // oldest
+noteSchema.index({ ...LIST_KEYS, editedAt: -1, _id: -1 }); // edited
+noteSchema.index(
+  { ...LIST_KEYS, title: 1, _id: 1 },
+  { collation: TITLE_COLLATION }
+); // title
 
 const Note = mongoose.model("Note", noteSchema);
 

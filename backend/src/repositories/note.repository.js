@@ -1,5 +1,6 @@
 import Note from "../models/note.model.js";
 import { htmlToText } from "../utils/htmlToText.js";
+import { NOTE_SORTS, TITLE_COLLATION } from "../utils/noteSort.js";
 
 export const create = (data) => Note.create(data);
 
@@ -7,9 +8,11 @@ export const findById = (id) => Note.findById(id);
 
 export const findByIdAndUser = (id, userId) => Note.findOne({ _id: id, userId });
 
-// Pinned first, then newest; _id breaks ties so the order is always the same
-// and pages never overlap or skip notes. Backed by the index on the model.
-const PAGE_SORT = { isPinned: -1, createdAt: -1, _id: -1 };
+// Pinned first, then the sort's field; see utils/noteSort.js.
+const pageSort = (sort) => {
+  const { field, order } = NOTE_SORTS[sort];
+  return { isPinned: -1, [field]: order, _id: order };
+};
 
 // The user's archived or unarchived notes, optionally only those with a tag.
 // Search looks at the title, the plain text of the content (not its HTML, so
@@ -31,14 +34,17 @@ const userFilter = (userId, { search, archived = false, tag }) => {
     : filter;
 };
 
-// Notes that come after the cursor in PAGE_SORT order.
-const afterCursor = ({ isPinned, createdAt, id }) => {
-  const date = new Date(createdAt);
+// Notes that come after the cursor in pageSort(sort) order.
+const afterCursor = (sort, { isPinned, value, id }) => {
+  const { field, order } = NOTE_SORTS[sort];
+  const after = order === 1 ? "$gt" : "$lt";
+  const cursorValue = field === "title" ? value : new Date(value);
+
   return {
     $or: [
       { isPinned: { $lt: isPinned } },
-      { isPinned, createdAt: { $lt: date } },
-      { isPinned, createdAt: date, _id: { $lt: id } },
+      { isPinned, [field]: { [after]: cursorValue } },
+      { isPinned, [field]: cursorValue, _id: { [after]: id } },
     ],
   };
 };
@@ -46,13 +52,18 @@ const afterCursor = ({ isPinned, createdAt, id }) => {
 // Fetches one extra note so the caller can tell whether another page exists.
 export const findPageByUser = (
   userId,
-  { search, archived, tag, cursor, limit }
+  { search, archived, tag, sort, cursor, limit }
 ) => {
   const filter = userFilter(userId, { search, archived, tag });
 
-  return Note.find(cursor ? { $and: [filter, afterCursor(cursor)] } : filter)
-    .sort(PAGE_SORT)
+  const query = Note.find(
+    cursor ? { $and: [filter, afterCursor(sort, cursor)] } : filter
+  )
+    .sort(pageSort(sort))
     .limit(limit + 1);
+
+  // compares titles (sorting and the cursor) ignoring case, as the index does
+  return sort === "title" ? query.collation(TITLE_COLLATION) : query;
 };
 
 export const countByUser = (userId, { search, archived, tag } = {}) =>
@@ -64,6 +75,15 @@ export const deleteById = (id) => Note.deleteOne({ _id: id });
 
 // Removes all of a user's notes, when their account is deleted.
 export const deleteByUser = (userId) => Note.deleteMany({ userId });
+
+// Gives notes saved before sorting existed an edit date: when they were
+// created. Safe to run on every start. Returns how many notes were updated.
+export const backfillEditedAt = async () => {
+  const result = await Note.updateMany({ editedAt: { $exists: false } }, [
+    { $set: { editedAt: "$createdAt" } },
+  ]);
+  return result.modifiedCount;
+};
 
 // Marks notes saved before archiving existed as not archived, so the list
 // filter (an exact match, which the index can use) finds them. Safe to run on

@@ -4,6 +4,7 @@ import { useLocation, useSearchParams } from "react-router-dom";
 import { NotebookPen, Plus, SearchX, Tag, X } from "lucide-react";
 import { getUserSearchNotes, getUserAllNotes } from "@/Service/NotesService";
 import { getGreeting } from "@/lib/helper";
+import { DEFAULT_SORT, parseSort } from "@/lib/noteSorts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useNoteActions } from "@/hooks/useNoteActions";
 import { useNoteDialog } from "@/hooks/useNoteDialog";
@@ -13,6 +14,7 @@ import EmptyState from "@/components/EmptyState/EmptyState";
 import SearchBar from "@/components/SearchBar/SearchBar";
 import DeleteNoteDialog from "@/components/Notes/DeleteNoteDialog";
 import NoteDialog from "@/components/Notes/NoteDialog";
+import SortMenu from "@/components/Notes/SortMenu";
 import {
   NotesGrid,
   NotesSkeleton,
@@ -25,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const SEARCH_DEBOUNCE_MS = 1000;
 const SEARCH_PARAM = "search";
 const TAG_PARAM = "tag";
+const SORT_PARAM = "sort";
 
 // A copy of `params` with `key` set to `value`, or removed when it's empty.
 const withParam = (params, key, value) => {
@@ -53,21 +56,24 @@ const Home = () => {
   const appliedQuery = (searchParams.get(SEARCH_PARAM) ?? "").trim();
   // the tag filter (?tag=work) is in the URL too, and works with the search
   const activeTag = (searchParams.get(TAG_PARAM) ?? "").trim();
+  // and so is the order (?sort=edited); newest first when it's missing
+  const activeSort = parseSort(searchParams.get(SORT_PARAM));
   const [searchQuery, setSearchQuery] = useState(appliedQuery);
   const syncedQuery = useRef(appliedQuery);
   const isOwnNavigation = useRef(false);
   const location = useLocation();
 
   // The notes, or the search results when a query is active, limited to the
-  // active tag; a new query or tag reloads the list from the start.
+  // active tag and in the active order; changing any of them reloads the list
+  // from the start.
   const fetchPage = useCallback(
     (page) => {
-      const filters = { ...page, tag: activeTag || undefined };
+      const filters = { ...page, tag: activeTag || undefined, sort: activeSort };
       return appliedQuery
         ? getUserSearchNotes(appliedQuery, filters)
         : getUserAllNotes(filters);
     },
-    [appliedQuery, activeTag]
+    [appliedQuery, activeTag, activeSort]
   );
   const {
     notes: allNotes,
@@ -108,6 +114,15 @@ const Home = () => {
 
   const onClearTag = () => updateTagParam("");
 
+  // Also a new history entry; the default order isn't written to the URL.
+  const updateSortParam = (sort) => {
+    if (sort === activeSort) return;
+    isOwnNavigation.current = true;
+    setSearchParams((params) =>
+      withParam(params, SORT_PARAM, sort === DEFAULT_SORT ? "" : sort)
+    );
+  };
+
   const debouncedQuery = useDebounce(searchQuery.trim(), SEARCH_DEBOUNCE_MS);
 
   // input -> URL, once the user pauses typing
@@ -141,12 +156,16 @@ const Home = () => {
     updateSearchParam("");
   };
 
+  const showEditDate = activeSort === "edited";
+
   const renderCards = (notes) =>
     notes.map((note) => (
       <NoteCard
         key={note._id}
         title={note.title}
-        date={note.createdAt}
+        // sorted by recently edited, cards show when each note was last edited
+        date={showEditDate ? (note.editedAt ?? note.createdAt) : note.createdAt}
+        datePrefix={showEditDate ? "Edited" : undefined}
         content={note.content}
         tags={note.tags}
         isPinned={note.isPinned}
@@ -271,11 +290,12 @@ const Home = () => {
           </div>
         </div>
 
-        {/* search and "New note" stay unavailable until the first load finishes */}
+        {/* search, sort and "New note" stay unavailable until the first load finishes */}
         <div className="flex w-full gap-2 md:w-auto">
           {isLoading ? (
             <>
               <Skeleton className="h-10 flex-1 md:w-80" />
+              <Skeleton className="h-10 w-9.5 sm:w-38" />
               <Skeleton className="h-10 w-9.5 sm:w-27" />
             </>
           ) : (
@@ -288,6 +308,7 @@ const Home = () => {
                 // spin while waiting for the typing pause and while results load
                 isSearching={isSearching || searchQuery.trim() !== appliedQuery}
               />
+              <SortMenu value={activeSort} onChange={updateSortParam} />
               <Button
                 size="lg"
                 className="h-10"
