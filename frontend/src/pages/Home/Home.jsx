@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useSearchParams } from "react-router-dom";
-import { NotebookPen, Plus, SearchX } from "lucide-react";
+import { NotebookPen, Plus, SearchX, Tag, X } from "lucide-react";
 import { getUserSearchNotes, getUserAllNotes } from "@/Service/NotesService";
 import { getGreeting } from "@/lib/helper";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -18,11 +18,21 @@ import {
   NotesSkeleton,
   ShowMoreNotes,
 } from "@/components/Notes/NotesGrid";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const SEARCH_DEBOUNCE_MS = 1000;
 const SEARCH_PARAM = "search";
+const TAG_PARAM = "tag";
+
+// A copy of `params` with `key` set to `value`, or removed when it's empty.
+const withParam = (params, key, value) => {
+  const next = new URLSearchParams(params);
+  if (value) next.set(key, value);
+  else next.delete(key);
+  return next;
+};
 
 const NotesSection = ({ label, children }) => (
   <section className="space-y-3">
@@ -41,19 +51,23 @@ const Home = () => {
   // and can be shared; the input keeps its own state while the user types.
   const [searchParams, setSearchParams] = useSearchParams();
   const appliedQuery = (searchParams.get(SEARCH_PARAM) ?? "").trim();
+  // the tag filter (?tag=work) is in the URL too, and works with the search
+  const activeTag = (searchParams.get(TAG_PARAM) ?? "").trim();
   const [searchQuery, setSearchQuery] = useState(appliedQuery);
   const syncedQuery = useRef(appliedQuery);
   const isOwnNavigation = useRef(false);
   const location = useLocation();
 
-  // The notes, or the search results when a query is active; a new query
-  // reloads the list from the start.
+  // The notes, or the search results when a query is active, limited to the
+  // active tag; a new query or tag reloads the list from the start.
   const fetchPage = useCallback(
-    (page) =>
-      appliedQuery
-        ? getUserSearchNotes(appliedQuery, page)
-        : getUserAllNotes(page),
-    [appliedQuery]
+    (page) => {
+      const filters = { ...page, tag: activeTag || undefined };
+      return appliedQuery
+        ? getUserSearchNotes(appliedQuery, filters)
+        : getUserAllNotes(filters);
+    },
+    [appliedQuery, activeTag]
   );
   const {
     notes: allNotes,
@@ -76,10 +90,23 @@ const Home = () => {
       syncedQuery.current = query;
       isOwnNavigation.current = true;
       // replace, so typing doesn't add a history entry per search
-      setSearchParams(query ? { [SEARCH_PARAM]: query } : {}, { replace: true });
+      setSearchParams((params) => withParam(params, SEARCH_PARAM, query), {
+        replace: true,
+      });
     },
     [setSearchParams]
   );
+
+  // A new history entry, so Back returns to the list before the filter.
+  const updateTagParam = (tag) => {
+    if (tag === activeTag) return;
+    isOwnNavigation.current = true;
+    setSearchParams((params) => withParam(params, TAG_PARAM, tag));
+    // the tag may have been clicked far down the list
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const onClearTag = () => updateTagParam("");
 
   const debouncedQuery = useDebounce(searchQuery.trim(), SEARCH_DEBOUNCE_MS);
 
@@ -129,6 +156,7 @@ const Home = () => {
         onDelete={() => setDeleteDialog({ open: true, note })}
         onPinNote={() => togglePinned(note)}
         onArchive={() => toggleArchived(note)}
+        onTagClick={updateTagParam}
       />
     ));
 
@@ -141,18 +169,38 @@ const Home = () => {
     }
 
     if (allNotes.length === 0) {
-      return appliedQuery ? (
-        <EmptyState
-          icon={SearchX}
-          title="No matching notes"
-          description={`Nothing matches “${appliedQuery}”. Try a different word or clear the search.`}
-          action={
-            <Button variant="outline" onClick={onClearSearch}>
-              Clear search
-            </Button>
-          }
-        />
-      ) : (
+      if (appliedQuery) {
+        const inTag = activeTag ? ` in notes tagged #${activeTag}` : "";
+        return (
+          <EmptyState
+            icon={SearchX}
+            title="No matching notes"
+            description={`Nothing matches “${appliedQuery}”${inTag}. Try a different word or clear the search.`}
+            action={
+              <Button variant="outline" onClick={onClearSearch}>
+                Clear search
+              </Button>
+            }
+          />
+        );
+      }
+
+      if (activeTag) {
+        return (
+          <EmptyState
+            icon={Tag}
+            title={`No notes tagged #${activeTag}`}
+            description="None of your notes have this tag. Clear the filter to see all of them."
+            action={
+              <Button variant="outline" onClick={onClearTag}>
+                Show all notes
+              </Button>
+            }
+          />
+        );
+      }
+
+      return (
         <EmptyState
           icon={NotebookPen}
           title="No notes yet"
@@ -196,13 +244,29 @@ const Home = () => {
           <h1 className="text-3xl font-semibold tracking-tight">
             {appliedQuery ? "Search results" : "Your notes"}
           </h1>
-          {isLoading || isSearching ? (
-            <Skeleton className="h-5 w-16" />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {total} {total === 1 ? "note" : "notes"}
-            </p>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {isLoading || isSearching ? (
+              <Skeleton className="h-5 w-16" />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {total} {total === 1 ? "note" : "notes"}
+              </p>
+            )}
+            {activeTag && (
+              <Badge variant="secondary" className="h-6 gap-1 pr-1 pl-2.5">
+                <span className="font-normal text-muted-foreground">Tagged</span>
+                #{activeTag}
+                <button
+                  type="button"
+                  onClick={onClearTag}
+                  aria-label={`Clear the #${activeTag} filter`}
+                  className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                >
+                  <X className="size-3" />
+                </button>
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* search and "New note" stay unavailable until the first load finishes */}

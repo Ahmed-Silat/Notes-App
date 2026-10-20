@@ -46,6 +46,8 @@ const NoteCard = ({
   busyLabel,
   // optional: archived notes can't be pinned, so their cards have no pin button
   onPinNote,
+  // optional: makes each tag a button that filters the list by it
+  onTagClick,
   onArchive,
   onOpen,
   onEdit,
@@ -61,7 +63,7 @@ const NoteCard = ({
       aria-busy={isBusy}
       className={cn(
         "group relative gap-3 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg has-[button:focus-visible]:ring-2 has-[button:focus-visible]:ring-ring/50",
-        isPinned && "ring-brand/50 dark:ring-brand/40"
+        isPinned && "ring-brand/50 dark:ring-brand/40",
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -84,7 +86,7 @@ const NoteCard = ({
               "-mt-1 -mr-1 shrink-0",
               isPinned
                 ? "text-brand hover:text-brand"
-                : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+                : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100",
             )}
           >
             <Pin className={cn(isPinned && "fill-current")} />
@@ -102,11 +104,28 @@ const NoteCard = ({
 
       {tags?.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="font-normal">
-              #{tag}
-            </Badge>
-          ))}
+          {tags.map((tag) =>
+            onTagClick ? (
+              <Badge
+                key={tag}
+                asChild
+                variant="secondary"
+                className="relative z-10 font-normal outline-none hover:bg-secondary/80 hover:text-foreground"
+              >
+                <button
+                  type="button"
+                  aria-label={`Show notes tagged ${tag}`}
+                  onClick={() => onTagClick(tag)}
+                >
+                  #{tag}
+                </button>
+              </Badge>
+            ) : (
+              <Badge key={tag} variant="secondary" className="font-normal">
+                #{tag}
+              </Badge>
+            ),
+          )}
         </div>
       )}
 

@@ -11,11 +11,13 @@ export const findByIdAndUser = (id, userId) => Note.findOne({ _id: id, userId })
 // and pages never overlap or skip notes. Backed by the index on the model.
 const PAGE_SORT = { isPinned: -1, createdAt: -1, _id: -1 };
 
-// The user's archived or unarchived notes. Search looks at the title, the
-// plain text of the content (not its HTML, so formatting and &nbsp; don't get
-// in the way) and the tags.
-const userFilter = (userId, { search, archived = false }) => {
+// The user's archived or unarchived notes, optionally only those with a tag.
+// Search looks at the title, the plain text of the content (not its HTML, so
+// formatting and &nbsp; don't get in the way) and the tags.
+const userFilter = (userId, { search, archived = false, tag }) => {
   const filter = { userId, isArchived: archived };
+  // exact match on any element of the tags array
+  if (tag) filter.tags = tag;
 
   return search
     ? {
@@ -42,16 +44,19 @@ const afterCursor = ({ isPinned, createdAt, id }) => {
 };
 
 // Fetches one extra note so the caller can tell whether another page exists.
-export const findPageByUser = (userId, { search, archived, cursor, limit }) => {
-  const filter = userFilter(userId, { search, archived });
+export const findPageByUser = (
+  userId,
+  { search, archived, tag, cursor, limit }
+) => {
+  const filter = userFilter(userId, { search, archived, tag });
 
   return Note.find(cursor ? { $and: [filter, afterCursor(cursor)] } : filter)
     .sort(PAGE_SORT)
     .limit(limit + 1);
 };
 
-export const countByUser = (userId, { search, archived } = {}) =>
-  Note.countDocuments(userFilter(userId, { search, archived }));
+export const countByUser = (userId, { search, archived, tag } = {}) =>
+  Note.countDocuments(userFilter(userId, { search, archived, tag }));
 
 export const save = (note) => note.save();
 

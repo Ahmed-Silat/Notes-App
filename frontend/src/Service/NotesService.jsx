@@ -1,8 +1,8 @@
 import { api } from "@/lib/api";
 
-// One page of notes: { notes, total, nextCursor }
-export const getUserAllNotes = async ({ limit, cursor } = {}) => {
-  const data = await api.get("/note/all", { params: { limit, cursor } });
+// One page of notes, only those with `tag` if given: { notes, total, nextCursor }
+export const getUserAllNotes = async ({ limit, cursor, tag } = {}) => {
+  const data = await api.get("/note/all", { params: { limit, cursor, tag } });
   return data;
 };
 
@@ -29,9 +29,9 @@ export const deleteUserNotes = async (noteId) => {
   return data;
 };
 
-export const getUserSearchNotes = async (query, { limit, cursor } = {}) => {
+export const getUserSearchNotes = async (query, { limit, cursor, tag } = {}) => {
   const data = await api.get("/note/search", {
-    params: { query, limit, cursor },
+    params: { query, limit, cursor, tag },
   });
   return data;
 };
