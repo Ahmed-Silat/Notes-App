@@ -51,7 +51,8 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       content: noteData?.content || "",
       tags: noteData?.tags || [],
     },
-    mode: "onTouched",
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const onSubmit = async (values) => {
