@@ -77,6 +77,20 @@ export const updateNoteArchived = asyncHandler(async (req, res) => {
   });
 });
 
+export const updateNoteColor = asyncHandler(async (req, res) => {
+  const note = await noteService.updateNoteColor(
+    req.user.id,
+    req.params.noteId,
+    req.body.color
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Note color updated",
+    note,
+  });
+});
+
 export const searchNote = asyncHandler(async (req, res) => {
   const { query, ...page } = req.query;
   const { notes, total, nextCursor } = await noteService.searchNotes(

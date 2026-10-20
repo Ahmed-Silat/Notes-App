@@ -80,7 +80,7 @@ const Home = () => {
     loadMore,
   } = useNotesList(fetchPage);
 
-  const { busyNotes, deleteNote, togglePinned, toggleArchived } =
+  const { busyNotes, deleteNote, togglePinned, toggleArchived, changeColor } =
     useNoteActions(getAllNotes);
   const noteDialog = useNoteDialog();
   const [deleteDialog, setDeleteDialog] = useState({ open: false, note: null });
@@ -150,11 +150,13 @@ const Home = () => {
         content={note.content}
         tags={note.tags}
         isPinned={note.isPinned}
+        color={note.color}
         busyLabel={busyNotes[note._id]}
         onOpen={() => noteDialog.openView(note)}
         onEdit={() => noteDialog.openEdit(note)}
         onDelete={() => setDeleteDialog({ open: true, note })}
         onPinNote={() => togglePinned(note)}
+        onColorChange={(color) => changeColor(note, color)}
         onArchive={() => toggleArchived(note)}
         onTagClick={updateTagParam}
       />

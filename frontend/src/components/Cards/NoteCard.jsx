@@ -16,8 +16,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatDate, htmlToText } from "@/lib/helper";
+import { getNoteColor } from "@/lib/noteColors";
 import { cn } from "@/lib/utils";
 import NoteContent from "@/components/NoteContent/NoteContent";
+import { NoteColorMenu } from "@/components/Notes/NoteColorPicker";
 
 const ActionButton = ({ label, onClick, className, children }) => (
   <Tooltip>
@@ -43,11 +45,13 @@ const NoteCard = ({
   tags,
   isPinned,
   isArchived,
+  color,
   busyLabel,
   // optional: archived notes can't be pinned, so their cards have no pin button
   onPinNote,
   // optional: makes each tag a button that filters the list by it
   onTagClick,
+  onColorChange,
   onArchive,
   onOpen,
   onEdit,
@@ -63,6 +67,7 @@ const NoteCard = ({
       aria-busy={isBusy}
       className={cn(
         "group relative gap-3 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg has-[button:focus-visible]:ring-2 has-[button:focus-visible]:ring-ring/50",
+        getNoteColor(color).surface,
         isPinned && "ring-brand/50 dark:ring-brand/40",
       )}
     >
@@ -134,10 +139,14 @@ const NoteCard = ({
           {formatDate(date)}
         </time>
 
-        <div className="flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-has-[button:focus-visible]:opacity-100">
+        {/* stays visible while the color menu is open */}
+        <div className="flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-has-[button:focus-visible]:opacity-100 sm:group-has-aria-expanded:opacity-100">
           <ActionButton label="Set reminder">
             <BellPlus />
           </ActionButton>
+          {onColorChange && (
+            <NoteColorMenu value={color ?? "default"} onChange={onColorChange} />
+          )}
           <ActionButton
             label={isArchived ? "Unarchive note" : "Archive note"}
             onClick={onArchive}

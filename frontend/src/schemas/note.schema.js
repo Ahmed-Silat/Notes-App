@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { htmlToText } from "@/lib/helper";
+import { NOTE_COLOR_NAMES } from "@/lib/noteColors";
 
 // Mirrors createNoteDto in backend/src/dtos/note.dto.js.
 export const noteSchema = z.object({
@@ -9,4 +10,5 @@ export const noteSchema = z.object({
     .string()
     .refine((value) => htmlToText(value).length > 0, "Please enter the content"),
   tags: z.array(z.string().trim().min(1)),
+  color: z.enum(NOTE_COLOR_NAMES),
 });

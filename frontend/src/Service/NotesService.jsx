@@ -14,13 +14,18 @@ export const getUserArchivedNotes = async ({ limit, cursor } = {}) => {
   return data;
 };
 
-export const createNotes = async (title, content, tags) => {
-  const res = await api.post("/note/add", { title, content, tags });
+export const createNotes = async (title, content, tags, color) => {
+  const res = await api.post("/note/add", { title, content, tags, color });
   return res;
 };
 
-export const updateUserNotes = async (noteId, title, content, tags) => {
-  const data = await api.put(`/note/edit/${noteId}`, { title, content, tags });
+export const updateUserNotes = async (noteId, title, content, tags, color) => {
+  const data = await api.put(`/note/edit/${noteId}`, {
+    title,
+    content,
+    tags,
+    color,
+  });
   return data;
 };
 
@@ -40,6 +45,11 @@ export const updatePinnedNotes = async (noteData) => {
   const data = await api.put(`/note/update-note-pinned/${noteData._id}`, {
     isPinned: !noteData.isPinned,
   });
+  return data;
+};
+
+export const updateNoteColor = async (noteId, color) => {
+  const data = await api.put(`/note/update-note-color/${noteId}`, { color });
   return data;
 };
 

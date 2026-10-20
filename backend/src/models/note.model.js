@@ -1,6 +1,18 @@
 import mongoose from "mongoose";
 import { htmlToText } from "../utils/htmlToText.js";
 
+// Background colors a note can have. Names, not hex values, so the frontend can
+// pick a matching shade for light and dark mode (frontend/src/lib/noteColors.js).
+export const NOTE_COLORS = [
+  "default",
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "purple",
+];
+
 const noteSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -30,6 +42,12 @@ const noteSchema = new mongoose.Schema({
   isArchived: {
     type: Boolean,
     default: false,
+  },
+  // notes saved before colors existed read back as "default" too
+  color: {
+    type: String,
+    enum: NOTE_COLORS,
+    default: "default",
   },
   userId: {
     type: String,
