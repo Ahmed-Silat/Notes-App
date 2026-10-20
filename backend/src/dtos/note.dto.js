@@ -68,6 +68,8 @@ export const listNotesDto = z.object({
   archived: z
     .stringbool({ error: "archived must be true or false" })
     .default(false),
+  // ?tag=work lists (or searches) only the notes with that exact tag
+  tag: z.string().trim().min(1, "tag can't be empty").optional(),
 });
 
 export const searchNoteDto = listNotesDto.extend({

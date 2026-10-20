@@ -54,10 +54,16 @@ export const updateNoteArchived = async (userId, noteId, isArchived) => {
   return noteRepository.save(note);
 };
 
-const getPage = async (userId, { search, archived, cursor, limit }) => {
+const getPage = async (userId, { search, archived, tag, cursor, limit }) => {
   const [notes, total] = await Promise.all([
-    noteRepository.findPageByUser(userId, { search, archived, cursor, limit }),
-    noteRepository.countByUser(userId, { search, archived }),
+    noteRepository.findPageByUser(userId, {
+      search,
+      archived,
+      tag,
+      cursor,
+      limit,
+    }),
+    noteRepository.countByUser(userId, { search, archived, tag }),
   ]);
 
   const hasMore = notes.length > limit;
@@ -70,8 +76,8 @@ const getPage = async (userId, { search, archived, cursor, limit }) => {
   };
 };
 
-export const getNotes = (userId, { archived, cursor, limit }) =>
-  getPage(userId, { archived, cursor, limit });
+export const getNotes = (userId, { archived, tag, cursor, limit }) =>
+  getPage(userId, { archived, tag, cursor, limit });
 
 export const deleteNote = async (userId, noteId) => {
   const note = await noteRepository.findByIdAndUser(noteId, userId);
@@ -88,5 +94,11 @@ export const deleteNote = async (userId, noteId) => {
 const buildSearchRegex = (query) =>
   new RegExp(query.trim().split(/\s+/).map(escapeRegex).join("\\s+"), "i");
 
-export const searchNotes = (userId, query, { archived, cursor, limit }) =>
-  getPage(userId, { search: buildSearchRegex(query), archived, cursor, limit });
+export const searchNotes = (userId, query, { archived, tag, cursor, limit }) =>
+  getPage(userId, {
+    search: buildSearchRegex(query),
+    archived,
+    tag,
+    cursor,
+    limit,
+  });
