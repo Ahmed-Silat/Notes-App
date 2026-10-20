@@ -1,7 +1,15 @@
 import { z } from "zod";
 
 // Same rules the backend enforces (backend/src/config/auth.js): lowercase
-// emails and passwords of at least 6 characters.
+// emails, names of at most 50 characters and passwords of at least 6.
+
+export const NAME_MAX_LENGTH = 50;
+
+const name = z
+  .string()
+  .trim()
+  .min(1, "Name is required")
+  .max(NAME_MAX_LENGTH, `Name can be at most ${NAME_MAX_LENGTH} characters`);
 
 const email = z
   .string()
@@ -34,7 +42,7 @@ export const loginSchema = z.object({
 
 export const signupSchema = z
   .object({
-    name: z.string().trim().min(1, "Full Name is required"),
+    name,
     email,
     password: newPassword,
     confirmPassword,
@@ -46,3 +54,20 @@ export const forgotPasswordSchema = z.object({ email });
 export const resetPasswordSchema = z
   .object({ password: newPassword, confirmPassword })
   .refine(...passwordsMatch);
+
+// Settings page
+
+export const profileSchema = z.object({ name });
+
+// `password` is the new password, so the sign-up rules and match check apply
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    password: newPassword,
+    confirmPassword,
+  })
+  .refine(...passwordsMatch);
+
+export const deleteAccountSchema = z.object({
+  deletePassword: z.string().min(1, "Password is required"),
+});
