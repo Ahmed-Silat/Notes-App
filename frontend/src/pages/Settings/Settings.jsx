@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, Lock, Mail, Trash2, User } from "lucide-react";
+import { Download, Loader2, Lock, Mail, Trash2, User } from "lucide-react";
 import {
   changePassword,
   deleteAccount,
   updateName,
 } from "@/Service/AuthService";
+import { exportAllNotesPdf } from "@/lib/exportNotes";
 import { getErrorMessage } from "@/lib/helper";
 import { saveStateNow } from "@/redux/store";
 import { signoutSuccess, updateUserSuccess } from "@/redux/user/userSlice";
@@ -277,6 +278,55 @@ const DeleteAccountDialog = ({ open, onOpenChange }) => {
   );
 };
 
+// usernames are stored lowercase; the cover shows "Ahmed Silat", as the navbar
+const toDisplayName = (name) => name.replace(/\b\p{L}/gu, (letter) => letter.toUpperCase());
+
+const ExportSection = () => {
+  const { currentUser } = useSelector((state) => state.user);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const onExport = async () => {
+    setIsExporting(true);
+    try {
+      const count = await exportAllNotesPdf(
+        toDisplayName(currentUser?.rest?.username ?? "")
+      );
+      if (count === 0) {
+        toast.info("You don't have any notes to export yet");
+      } else {
+        toast.success(`Exported ${count} ${count === 1 ? "note" : "notes"}`);
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not export your notes"));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Export</CardTitle>
+        <CardDescription>
+          Download all your notes, archived ones included, as one PDF: a list
+          of your notes first, then the notes one after another.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Button
+          variant="outline"
+          className="self-end"
+          disabled={isExporting}
+          onClick={onExport}
+        >
+          {isExporting ? <Loader2 className="animate-spin" /> : <Download />}
+          {isExporting ? "Exporting..." : "Export all notes"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
 const DangerZone = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -308,13 +358,14 @@ const Settings = () => (
     <div className="mb-8 space-y-1">
       <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
       <p className="text-sm text-muted-foreground">
-        Manage your profile, password and account.
+        Manage your profile, password, notes and account.
       </p>
     </div>
 
     <div className="space-y-6">
       <ProfileSection />
       <PasswordSection />
+      <ExportSection />
       <DangerZone />
     </div>
   </div>

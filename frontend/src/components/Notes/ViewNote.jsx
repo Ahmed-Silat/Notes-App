@@ -1,5 +1,8 @@
-import { Pencil } from "lucide-react";
-import { formatDate } from "@/lib/helper";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Download, Loader2, Pencil } from "lucide-react";
+import { exportNotePdf } from "@/lib/exportNotes";
+import { formatDate, getErrorMessage } from "@/lib/helper";
 import NoteContent from "@/components/NoteContent/NoteContent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +13,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+// Downloads the note as a PDF; building it can take a moment the first time.
+const DownloadPdfButton = ({ note }) => {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const onDownload = async () => {
+    setIsExporting(true);
+    try {
+      await exportNotePdf(note);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not export the note"));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="sm:mr-auto"
+      disabled={isExporting}
+      onClick={onDownload}
+    >
+      {isExporting ? <Loader2 className="animate-spin" /> : <Download />}
+      {isExporting ? "Preparing PDF..." : "Download PDF"}
+    </Button>
+  );
+};
 
 // Read-only view of a note, rendered inside <NoteDialog>.
 const ViewNote = ({ note, onEdit }) => (
@@ -36,6 +68,7 @@ const ViewNote = ({ note, onEdit }) => (
     )}
 
     <DialogFooter>
+      <DownloadPdfButton note={note} />
       <DialogClose asChild>
         <Button type="button" variant="outline">
           Close
