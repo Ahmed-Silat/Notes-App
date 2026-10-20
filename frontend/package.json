@@ -28,7 +28,7 @@
     "react-hook-form": "^7.90.0",
     "react-quill-new": "^3.8.3",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^6.28.0",
+    "react-router-dom": "^7.18.4",
     "redux-persist": "^6.0.0",
     "shadcn": "^4.21.4",
     "sonner": "^2.0.8",
@@ -47,6 +47,6 @@
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.12.0",
     "tailwindcss": "^4.3.3",
-    "vite": "^6.0.1"
+    "vite": "^6.4.4"
   }
 }
