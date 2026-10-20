@@ -198,6 +198,13 @@
   .note-editor .ql-snow .ql-tooltip input[type="text"] {
     @apply rounded-sm border-input bg-transparent;
   }
+  /* checklists in the editor: cross out ticked items, as on the cards */
+  .note-editor .ql-editor li:is([data-list="checked"], [data-list="unchecked"]) > .ql-ui {
+    color: var(--muted-foreground);
+  }
+  .note-editor .ql-editor li[data-list="checked"] {
+    @apply text-muted-foreground line-through;
+  }
 
 /* Read-only note content (NoteContent): the editor's HTML with its formatting.
    Text without a color of its own inherits the surrounding color. */
@@ -224,6 +231,41 @@
   .note-content ul ul ul { list-style-type: square; }
   .note-content ol ol { list-style-type: lower-alpha; }
   .note-content ol ol ol { list-style-type: lower-roman; }
+  /* Checklists: the editor saves them as <ul><li data-list="checked|unchecked">,
+     one <ul> per run of same-state items. Draw a checkbox instead of a bullet. */
+  .note-content li:is([data-list="checked"], [data-list="unchecked"]) {
+    @apply relative list-none;
+  }
+  .note-content li:is([data-list="checked"], [data-list="unchecked"])::before {
+    content: "";
+    @apply absolute rounded-[0.25em] border-[1.5px] border-muted-foreground;
+    left: -1.45em;
+    top: calc(0.5lh - 0.475em);
+    width: 0.95em;
+    height: 0.95em;
+  }
+  .note-content li[data-list="checked"]::before {
+    @apply border-primary bg-primary;
+  }
+  .note-content li[data-list="checked"]::after {
+    content: "";
+    @apply absolute bg-primary-foreground;
+    left: -1.45em;
+    top: calc(0.5lh - 0.475em);
+    width: 0.95em;
+    height: 0.95em;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E")
+      center / 75% no-repeat;
+  }
+  .note-content li[data-list="checked"] {
+    @apply text-muted-foreground line-through;
+  }
+  /* a checked and an unchecked run are separate lists; keep them as one list */
+  .note-content
+    ul:has(> li[data-list="checked"], > li[data-list="unchecked"])
+    + ul:has(> li[data-list="checked"], > li[data-list="unchecked"]) {
+    @apply mt-0;
+  }
   .note-content blockquote {
     @apply border-l-4 border-border pl-4 italic;
   }
