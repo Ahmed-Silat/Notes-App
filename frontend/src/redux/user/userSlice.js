@@ -25,6 +25,12 @@ const userSlice = createSlice({
       state.loading = false;
     },
 
+    // merges changed fields (e.g. a new username) into the logged-in user
+    updateUserSuccess: (state, action) => {
+      if (!state.currentUser) return;
+      state.currentUser.rest = { ...state.currentUser.rest, ...action.payload };
+    },
+
     signoutStart: (state) => {
       state.loading = true;
     },
@@ -49,6 +55,7 @@ export const {
   signoutFailure,
   signoutStart,
   signoutSuccess,
+  updateUserSuccess,
 } = userSlice.actions;
 
 export default userSlice.reducer;

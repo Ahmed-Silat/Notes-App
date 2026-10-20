@@ -8,6 +8,7 @@ import Archive from "./pages/Archive/Archive";
 import NotFound from "./pages/NotFound/NotFound";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
+import Settings from "./pages/Settings/Settings";
 import AppLayout from "./components/layout/AppLayout";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -22,6 +23,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/reminders" element={<Reminders />} />
             <Route path="/archive" element={<Archive />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

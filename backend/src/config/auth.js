@@ -2,16 +2,34 @@ import bcryptjs from "bcryptjs";
 import mongoose from "mongoose";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { APIError } from "better-auth/api";
 import { CORS_ORIGINS, env } from "./env.js";
 import { resetPasswordEmail } from "../emails/resetPasswordEmail.js";
+import { deleteByUser } from "../repositories/note.repository.js";
 import { sendEmail } from "../utils/mailer.js";
 
 const SESSION_DAYS = 7;
 const DAY_SECONDS = 24 * 60 * 60;
 const RESET_LINK_MINUTES = 60;
 
-const normalizeName = (name) =>
-  typeof name === "string" ? name.trim().toLowerCase() : name;
+// same limit as the forms (frontend/src/schemas/auth.schema.js)
+const NAME_MAX_LENGTH = 50;
+
+// Usernames are stored trimmed and lowercase. Rejects an empty or too long
+// name with a 400, which the sign-up and Settings forms show as an error.
+const normalizeName = (name) => {
+  const normalized = String(name ?? "").trim().toLowerCase();
+
+  if (!normalized) {
+    throw new APIError("BAD_REQUEST", { message: "Name is required" });
+  }
+  if (normalized.length > NAME_MAX_LENGTH) {
+    throw new APIError("BAD_REQUEST", {
+      message: `Name can be at most ${NAME_MAX_LENGTH} characters`,
+    });
+  }
+  return normalized;
+};
 
 const createAuth = () =>
   betterAuth({
@@ -26,6 +44,15 @@ const createAuth = () =>
     user: {
       modelName: "users",
       fields: { name: "username" },
+      // Settings page: users can delete their account (confirmed with their
+      // password). Their notes go first, so if that fails the account stays and
+      // they can try again, instead of leaving notes behind without an owner.
+      deleteUser: {
+        enabled: true,
+        beforeDelete: async (user) => {
+          await deleteByUser(user.id);
+        },
+      },
     },
 
     emailAndPassword: {

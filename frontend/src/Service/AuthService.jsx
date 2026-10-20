@@ -2,11 +2,16 @@ import { authClient } from "@/lib/auth-client";
 
 // Login, sign-up and logout go through Better Auth. They resolve to the same
 // shape the pages already use ({ data: { success, message, rest } }) and throw
-// an Error with Better Auth's message when the request fails.
+// an Error with Better Auth's message when the request fails. The error's
+// `code` is Better Auth's error code, e.g. "INVALID_PASSWORD".
 
 const unwrap = ({ data, error }) => {
   if (error) {
-    throw new Error(error.message || error.statusText || "Something went wrong");
+    const err = new Error(
+      error.message || error.statusText || "Something went wrong"
+    );
+    err.code = error.code;
+    throw err;
   }
   return data;
 };
@@ -51,4 +56,28 @@ export const resetPassword = async (token, newPassword) => {
 export const signout = async () => {
   unwrap(await authClient.signOut());
   return { data: { success: true, message: "User logged out successfully" } };
+};
+
+// Saves a new name and resolves to the updated user, with the name as the
+// server stored it (trimmed and lowercase).
+export const updateName = async (name) => {
+  unwrap(await authClient.updateUser({ name }));
+  const { user } = unwrap(await authClient.getSession());
+  return toUser(user);
+};
+
+// Also logs the account out on every other device; this one stays logged in.
+export const changePassword = async (currentPassword, newPassword) => {
+  unwrap(
+    await authClient.changePassword({
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    })
+  );
+};
+
+// Permanently deletes the account and all its notes, and logs it out.
+export const deleteAccount = async (password) => {
+  unwrap(await authClient.deleteUser({ password }));
 };

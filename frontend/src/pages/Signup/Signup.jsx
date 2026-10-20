@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Loader2, Lock, Mail, User } from "lucide-react";
 import { singnUp } from "@/Service/AuthService";
 import { getErrorMessage } from "@/lib/helper";
-import { signupSchema } from "@/schemas/auth.schema";
+import { NAME_MAX_LENGTH, signupSchema } from "@/schemas/auth.schema";
 import AuthLayout from "@/components/layout/AuthLayout";
 import FormField from "@/components/Input/FormField";
 import TextLink from "@/components/TextLink";
@@ -65,6 +65,7 @@ const Signup = () => {
             label="Full name"
             autoComplete="name"
             placeholder="John Doe"
+            maxLength={NAME_MAX_LENGTH}
             icon={User}
           />
 

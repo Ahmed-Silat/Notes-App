@@ -1,5 +1,5 @@
 import { saveStateNow } from "@/redux/store";
-import { Archive, LogOut, StickyNote } from "lucide-react";
+import { Archive, LogOut, Settings, StickyNote } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -124,6 +124,12 @@ const Navbar = ({ onLoggingOutChange }) => {
                 )}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link to="/settings">
+                  <Settings />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 className="cursor-pointer"

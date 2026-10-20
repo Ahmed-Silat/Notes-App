@@ -62,6 +62,9 @@ export const save = (note) => note.save();
 
 export const deleteById = (id) => Note.deleteOne({ _id: id });
 
+// Removes all of a user's notes, when their account is deleted.
+export const deleteByUser = (userId) => Note.deleteMany({ userId });
+
 // Marks notes saved before archiving existed as not archived, so the list
 // filter (an exact match, which the index can use) finds them. Safe to run on
 // every start. Returns how many notes were updated.
