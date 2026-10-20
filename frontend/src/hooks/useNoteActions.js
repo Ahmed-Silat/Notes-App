@@ -3,11 +3,12 @@ import { toast } from "sonner";
 import {
   deleteUserNotes,
   updateArchivedNotes,
+  updateNoteColor,
   updatePinnedNotes,
 } from "@/Service/NotesService";
 import { getErrorMessage } from "@/lib/helper";
 
-// The per-card note actions (delete, pin, archive). `reload` refreshes the
+// The per-card note actions (delete, pin, archive, color). `reload` refreshes the
 // list; each card shows a loader until the refreshed list has arrived.
 export const useNoteActions = (reload) => {
   // note id -> label shown on that card while it is being changed
@@ -72,5 +73,16 @@ export const useNoteActions = (reload) => {
         })
     );
 
-  return { busyNotes, deleteNote, togglePinned, toggleArchived };
+  // the card's new color is feedback enough, so no toast
+  const changeColor = (note, color) => {
+    if (color === (note.color ?? "default")) return;
+    return runAction(
+      note,
+      "Saving color...",
+      () => updateNoteColor(note._id, color),
+      () => {}
+    );
+  };
+
+  return { busyNotes, deleteNote, togglePinned, toggleArchived, changeColor };
 };

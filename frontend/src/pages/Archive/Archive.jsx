@@ -26,7 +26,8 @@ const Archive = () => {
     loadMore,
   } = useNotesList(getUserArchivedNotes);
 
-  const { busyNotes, deleteNote, toggleArchived } = useNoteActions(reload);
+  const { busyNotes, deleteNote, toggleArchived, changeColor } =
+    useNoteActions(reload);
   const noteDialog = useNoteDialog();
   const [deleteDialog, setDeleteDialog] = useState({ open: false, note: null });
 
@@ -60,10 +61,12 @@ const Archive = () => {
             content={note.content}
             tags={note.tags}
             isArchived
+            color={note.color}
             busyLabel={busyNotes[note._id]}
             onOpen={() => noteDialog.openView(note)}
             onEdit={() => noteDialog.openEdit(note)}
             onDelete={() => setDeleteDialog({ open: true, note })}
+            onColorChange={(color) => changeColor(note, color)}
             onArchive={() => toggleArchived(note)}
           />
         ))}

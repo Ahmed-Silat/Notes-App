@@ -19,8 +19,8 @@ const getOwnedNote = async (userId, noteId) => {
   return note;
 };
 
-export const createNote = (userId, { title, content, tags }) =>
-  noteRepository.create({ title, content, tags, userId });
+export const createNote = (userId, { title, content, tags, color }) =>
+  noteRepository.create({ title, content, tags, color, userId });
 
 export const updateNote = async (userId, noteId, changes) => {
   const note = await getOwnedNote(userId, noteId);
@@ -50,6 +50,14 @@ export const updateNoteArchived = async (userId, noteId, isArchived) => {
   note.isArchived = isArchived;
   // archived notes aren't pinned (the Archive page has no pinned section)
   if (isArchived) note.isPinned = false;
+
+  return noteRepository.save(note);
+};
+
+export const updateNoteColor = async (userId, noteId, color) => {
+  const note = await getOwnedNote(userId, noteId);
+
+  note.color = color;
 
   return noteRepository.save(note);
 };

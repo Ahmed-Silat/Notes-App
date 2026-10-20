@@ -6,6 +6,7 @@ import {
   getAllNotes,
   searchNote,
   updateNoteArchived,
+  updateNoteColor,
   updateNotePinned,
 } from "../controllers/note.controller.js";
 import {
@@ -14,6 +15,7 @@ import {
   noteIdParamDto,
   searchNoteDto,
   updateNoteArchivedDto,
+  updateNoteColorDto,
   updateNoteDto,
   updateNotePinnedDto,
 } from "../dtos/note.dto.js";
@@ -45,6 +47,11 @@ router.put(
   "/update-note-archived/:noteId",
   validate({ params: noteIdParamDto, body: updateNoteArchivedDto }),
   updateNoteArchived
+);
+router.put(
+  "/update-note-color/:noteId",
+  validate({ params: noteIdParamDto, body: updateNoteColorDto }),
+  updateNoteColor
 );
 router.get("/search", validate({ query: searchNoteDto }), searchNote);
 

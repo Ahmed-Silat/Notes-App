@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NOTE_COLORS } from "../models/note.model.js";
 import { decodeCursor } from "../utils/cursor.js";
 
 const title = z
@@ -17,6 +18,10 @@ const tags = z.array(z.string().trim().min(1), {
 
 const isPinned = z.boolean({ error: "isPinned must be true or false" });
 
+const color = z.enum(NOTE_COLORS, {
+  error: `color must be one of: ${NOTE_COLORS.join(", ")}`,
+});
+
 export const noteIdParamDto = z.object({
   noteId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid note id"),
 });
@@ -25,6 +30,7 @@ export const createNoteDto = z.object({
   title,
   content,
   tags: tags.default([]),
+  color: color.default("default"),
 });
 
 export const updateNoteDto = z
@@ -33,6 +39,7 @@ export const updateNoteDto = z
     content: content.optional(),
     tags: tags.optional(),
     isPinned: isPinned.optional(),
+    color: color.optional(),
   })
   .refine((data) => Object.values(data).some((v) => v !== undefined), {
     error: "No changes provided",
@@ -43,6 +50,8 @@ export const updateNotePinnedDto = z.object({ isPinned });
 export const updateNoteArchivedDto = z.object({
   isArchived: z.boolean({ error: "isArchived must be true or false" }),
 });
+
+export const updateNoteColorDto = z.object({ color });
 
 export const NOTES_PAGE_SIZE = 24;
 export const NOTES_PAGE_SIZE_MAX = 100;

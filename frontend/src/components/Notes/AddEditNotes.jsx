@@ -1,4 +1,5 @@
-import { Controller, useForm } from "react-hook-form";
+import { useLayoutEffect } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -9,6 +10,7 @@ import { getErrorMessage } from "@/lib/helper";
 import { cn } from "@/lib/utils";
 import { noteSchema } from "@/schemas/note.schema";
 import TagInput from "@/components/Input/TagInput";
+import { NoteColorSwatches } from "@/components/Notes/NoteColorPicker";
 import { Button } from "@/components/ui/button";
 import {
   DialogClose,
@@ -35,8 +37,15 @@ const modules = {
   ],
 };
 
-// Add / edit form, rendered inside <NoteDialog>.
-const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
+// Add / edit form, rendered inside <NoteDialog>. `onColorChange` tells the
+// dialog the picked color, so it can show it while editing.
+const AddEditNotes = ({
+  onClose,
+  noteData,
+  type,
+  getAllNotes,
+  onColorChange,
+}) => {
   const isEdit = type === "edit";
 
   const {
@@ -50,10 +59,17 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       title: noteData?.title || "",
       content: noteData?.content || "",
       tags: noteData?.tags || [],
+      color: noteData?.color || "default",
     },
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
+
+  // a layout effect, so the dialog has the color before it's first painted
+  const color = useWatch({ control, name: "color" });
+  useLayoutEffect(() => {
+    onColorChange?.(color);
+  }, [color, onColorChange]);
 
   const onSubmit = async (values) => {
     try {
@@ -62,9 +78,15 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
             noteData._id,
             values.title,
             values.content,
-            values.tags
+            values.tags,
+            values.color
           )
-        : await createNotes(values.title, values.content, values.tags);
+        : await createNotes(
+            values.title,
+            values.content,
+            values.tags,
+            values.color
+          );
 
       if (!res.data.success) {
         toast.error(res.data.message);
@@ -149,6 +171,23 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
             control={control}
             render={({ field }) => (
               <TagInput id="note-tags" tags={field.value} setTags={field.onChange} />
+            )}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label id="note-color-label">Color</Label>
+          <Controller
+            name="color"
+            control={control}
+            render={({ field }) => (
+              <div role="group" aria-labelledby="note-color-label">
+                <NoteColorSwatches
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isSubmitting}
+                />
+              </div>
             )}
           />
         </div>
