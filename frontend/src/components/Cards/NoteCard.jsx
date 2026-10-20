@@ -41,6 +41,8 @@ const ActionButton = ({ label, onClick, className, children }) => (
 const NoteCard = ({
   title,
   date,
+  // optional: a word before the date, e.g. "Edited"
+  datePrefix,
   content,
   tags,
   isPinned,
@@ -136,6 +138,7 @@ const NoteCard = ({
 
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">
         <time dateTime={date} className="text-xs text-muted-foreground">
+          {datePrefix && `${datePrefix} `}
           {formatDate(date)}
         </time>
 

@@ -62,12 +62,21 @@ export const updateNoteColor = async (userId, noteId, color) => {
   return noteRepository.save(note);
 };
 
-const getPage = async (userId, { search, archived, tag, cursor, limit }) => {
+const getPage = async (
+  userId,
+  { search, archived, tag, sort, cursor, limit }
+) => {
+  // a cursor only works with the sort it came from
+  if (cursor && cursor.sort !== sort) {
+    throw new ApiError(400, "Invalid cursor");
+  }
+
   const [notes, total] = await Promise.all([
     noteRepository.findPageByUser(userId, {
       search,
       archived,
       tag,
+      sort,
       cursor,
       limit,
     }),
@@ -80,12 +89,12 @@ const getPage = async (userId, { search, archived, tag, cursor, limit }) => {
   return {
     notes: page,
     total,
-    nextCursor: hasMore ? encodeCursor(page.at(-1)) : null,
+    nextCursor: hasMore ? encodeCursor(page.at(-1), sort) : null,
   };
 };
 
-export const getNotes = (userId, { archived, tag, cursor, limit }) =>
-  getPage(userId, { archived, tag, cursor, limit });
+export const getNotes = (userId, { archived, tag, sort, cursor, limit }) =>
+  getPage(userId, { archived, tag, sort, cursor, limit });
 
 export const deleteNote = async (userId, noteId) => {
   const note = await noteRepository.findByIdAndUser(noteId, userId);
@@ -102,11 +111,16 @@ export const deleteNote = async (userId, noteId) => {
 const buildSearchRegex = (query) =>
   new RegExp(query.trim().split(/\s+/).map(escapeRegex).join("\\s+"), "i");
 
-export const searchNotes = (userId, query, { archived, tag, cursor, limit }) =>
+export const searchNotes = (
+  userId,
+  query,
+  { archived, tag, sort, cursor, limit }
+) =>
   getPage(userId, {
     search: buildSearchRegex(query),
     archived,
     tag,
+    sort,
     cursor,
     limit,
   });

@@ -3,6 +3,7 @@ import { connectDB } from "./src/config/db.js";
 import { env } from "./src/config/env.js";
 import {
   backfillContentText,
+  backfillEditedAt,
   backfillIsArchived,
 } from "./src/repositories/note.repository.js";
 import { ensureCredentialAccounts } from "./src/repositories/user.repository.js";
@@ -39,6 +40,15 @@ try {
   if (updated > 0) console.log(`Prepared ${updated} notes for archiving`);
 } catch (err) {
   console.error("Failed to prepare notes for archiving", err);
+}
+
+// Notes saved before sorting existed need an edit date for the "recently
+// edited" sort. Does nothing once every note has one.
+try {
+  const updated = await backfillEditedAt();
+  if (updated > 0) console.log(`Prepared ${updated} notes for sorting`);
+} catch (err) {
+  console.error("Failed to prepare notes for sorting", err);
 }
 
 app.listen(env.PORT, () => {

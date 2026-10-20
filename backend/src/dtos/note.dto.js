@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { NOTE_COLORS } from "../models/note.model.js";
 import { decodeCursor } from "../utils/cursor.js";
+import { NOTE_SORT_NAMES } from "../utils/noteSort.js";
 
 const title = z
   .string({ error: "Title is required" })
@@ -79,6 +80,12 @@ export const listNotesDto = z.object({
     .default(false),
   // ?tag=work lists (or searches) only the notes with that exact tag
   tag: z.string().trim().min(1, "tag can't be empty").optional(),
+  // ?sort=edited; pinned notes always come first (utils/noteSort.js)
+  sort: z
+    .enum(NOTE_SORT_NAMES, {
+      error: `sort must be one of: ${NOTE_SORT_NAMES.join(", ")}`,
+    })
+    .default("newest"),
 });
 
 export const searchNoteDto = listNotesDto.extend({
