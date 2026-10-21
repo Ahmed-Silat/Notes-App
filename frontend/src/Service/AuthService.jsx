@@ -5,12 +5,19 @@ import { authClient } from "@/lib/auth-client";
 // an Error with Better Auth's message when the request fails. The error's
 // `code` is Better Auth's error code, e.g. "INVALID_PASSWORD".
 
+// Better Auth allows 3 sign-in, sign-up or password attempts per 10 seconds,
+// and 3 reset emails a minute (in production)
+const TOO_MANY_ATTEMPTS = "Too many attempts. Please wait a minute and try again.";
+
 const unwrap = ({ data, error }) => {
   if (error) {
     const err = new Error(
-      error.message || error.statusText || "Something went wrong"
+      error.status === 429
+        ? TOO_MANY_ATTEMPTS
+        : error.message || error.statusText || "Something went wrong"
     );
     err.code = error.code;
+    err.status = error.status;
     throw err;
   }
   return data;

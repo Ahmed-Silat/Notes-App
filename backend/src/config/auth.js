@@ -83,6 +83,26 @@ const createAuth = () =>
       revokeSessionsOnPasswordReset: true,
     },
 
+    // On in production only (NODE_ENV=production): 100 requests per 10
+    // seconds per visitor, and 3 per 10 seconds for sign-in, sign-up and
+    // change-password. Counts are kept in memory, fine for a single server.
+    rateLimit: {
+      customRules: {
+        // Better Auth's default too; kept here so a forgot-password form can't
+        // be used to flood someone's inbox even if that default changes
+        "/request-password-reset": { window: 60, max: 3 },
+      },
+    },
+
+    advanced: {
+      ipAddress: {
+        // the visitor's address as Express resolved it (see app.js). Render's
+        // own X-Forwarded-For can hold several addresses, which Better Auth
+        // rejects, and then everyone would share one rate limit.
+        ipAddressHeaders: ["x-client-ip"],
+      },
+    },
+
     session: {
       expiresIn: SESSION_DAYS * DAY_SECONDS,
       // an active user's session is extended at most once a day

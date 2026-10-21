@@ -4,9 +4,14 @@ import { toNodeHandler } from "better-auth/node";
 import { getAuth } from "./config/auth.js";
 import { CORS_ORIGINS } from "./config/env.js";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
+import { notesRateLimit } from "./middlewares/rateLimit.middleware.js";
 import routes from "./routes/index.js";
 
 const app = express();
+
+// Render puts one proxy in front of the app, so req.ip is the visitor's address
+// (taken from X-Forwarded-For) instead of the proxy's. Both rate limits use it.
+app.set("trust proxy", 1);
 
 app.use(cors({ origin: CORS_ORIGINS, credentials: true }));
 
@@ -14,12 +19,16 @@ app.use(cors({ origin: CORS_ORIGINS, credentials: true }));
 // It reads the request body itself, so it must come before express.json().
 let authHandler;
 app.all("/api/auth/*", (req, res) => {
+  // Better Auth rate-limits by this header (see config/auth.js). It's always
+  // overwritten here, so a client can't send its own to dodge the limit.
+  req.headers["x-client-ip"] = req.ip ?? "";
   authHandler ??= toNodeHandler(getAuth());
   return authHandler(req, res);
 });
 
 app.use(express.json());
 
+app.use("/api/note", notesRateLimit);
 app.use("/api", routes);
 
 app.use(notFound);
