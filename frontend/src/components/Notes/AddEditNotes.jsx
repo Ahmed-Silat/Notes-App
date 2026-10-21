@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -52,6 +52,7 @@ const AddEditNotes = ({
     register,
     control,
     handleSubmit,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(noteSchema),
@@ -64,6 +65,13 @@ const AddEditNotes = ({
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
+
+  // Focus the title when the form appears: when the dialog opens, once the
+  // form has loaded, and after switching from view to edit. Not selected, so
+  // it isn't overwritten by accident.
+  useEffect(() => {
+    setFocus("title");
+  }, [setFocus]);
 
   // a layout effect, so the dialog has the color before it's first painted
   const color = useWatch({ control, name: "color" });
