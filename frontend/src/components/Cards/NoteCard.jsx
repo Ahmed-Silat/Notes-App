@@ -1,7 +1,6 @@
 import {
   Archive,
   ArchiveRestore,
-  BellPlus,
   Link2,
   Loader2,
   Pencil,
@@ -172,9 +171,6 @@ const NoteCard = ({
             </ActionButton>
           ) : (
             <>
-              <ActionButton label="Set reminder">
-                <BellPlus />
-              </ActionButton>
               {onColorChange && (
                 <NoteColorMenu value={color ?? "default"} onChange={onColorChange} />
               )}
