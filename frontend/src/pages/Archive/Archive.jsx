@@ -6,7 +6,6 @@ import { useNoteDialog } from "@/hooks/useNoteDialog";
 import { useNotesList } from "@/hooks/useNotesList";
 import NoteCard from "@/components/Cards/NoteCard";
 import EmptyState from "@/components/EmptyState/EmptyState";
-import DeleteNoteDialog from "@/components/Notes/DeleteNoteDialog";
 import NoteDialog from "@/components/Notes/NoteDialog";
 import ShareNoteDialog from "@/components/Notes/ShareNoteDialog";
 import {
@@ -30,13 +29,7 @@ const Archive = () => {
   const { busyNotes, deleteNote, toggleArchived, changeColor } =
     useNoteActions(reload);
   const noteDialog = useNoteDialog();
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, note: null });
   const [shareDialog, setShareDialog] = useState({ open: false, note: null });
-
-  const confirmDelete = () => {
-    setDeleteDialog((dialog) => ({ ...dialog, open: false }));
-    deleteNote(deleteDialog.note);
-  };
 
   const renderNotes = () => {
     if (isLoading) {
@@ -68,7 +61,7 @@ const Archive = () => {
             busyLabel={busyNotes[note._id]}
             onOpen={() => noteDialog.openView(note)}
             onEdit={() => noteDialog.openEdit(note)}
-            onDelete={() => setDeleteDialog({ open: true, note })}
+            onDelete={() => deleteNote(note)}
             onColorChange={(color) => changeColor(note, color)}
             onShare={() => setShareDialog({ open: true, note })}
             onArchive={() => toggleArchived(note)}
@@ -107,15 +100,6 @@ const Archive = () => {
         openEdit={noteDialog.openEdit}
         close={noteDialog.close}
         onSaved={reload}
-      />
-
-      <DeleteNoteDialog
-        note={deleteDialog.note}
-        open={deleteDialog.open}
-        onOpenChange={(open) =>
-          setDeleteDialog((dialog) => ({ ...dialog, open }))
-        }
-        onConfirm={confirmDelete}
       />
 
       <ShareNoteDialog

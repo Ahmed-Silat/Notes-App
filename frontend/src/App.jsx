@@ -5,6 +5,7 @@ import Login from "./pages/Login/Login";
 import RouteTitleHandler from "./components/RouteTitle/RouteTitleHandler";
 import Reminders from "./pages/Reminders/Reminders";
 import Archive from "./pages/Archive/Archive";
+import Trash from "./pages/Trash/Trash";
 import NotFound from "./pages/NotFound/NotFound";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
@@ -24,6 +25,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/reminders" element={<Reminders />} />
             <Route path="/archive" element={<Archive />} />
+            <Route path="/trash" element={<Trash />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="/login" element={<Login />} />

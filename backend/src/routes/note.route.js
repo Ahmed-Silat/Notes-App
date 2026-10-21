@@ -2,8 +2,11 @@ import express from "express";
 import {
   addNote,
   deleteNote,
+  deleteNoteForever,
   editNote,
+  emptyTrash,
   getAllNotes,
+  restoreNote,
   searchNote,
   shareNote,
   stopSharingNote,
@@ -35,11 +38,23 @@ router.put(
   editNote,
 );
 router.get("/all", validate({ query: listNotesDto }), getAllNotes);
+// moves the note to Trash
 router.delete(
   "/delete/:noteId",
   validate({ params: noteIdParamDto }),
   deleteNote,
 );
+router.put(
+  "/restore/:noteId",
+  validate({ params: noteIdParamDto }),
+  restoreNote,
+);
+router.delete(
+  "/delete-forever/:noteId",
+  validate({ params: noteIdParamDto }),
+  deleteNoteForever,
+);
+router.delete("/empty-trash", emptyTrash);
 router.put(
   "/update-note-pinned/:noteId",
   validate({ params: noteIdParamDto, body: updateNotePinnedDto }),

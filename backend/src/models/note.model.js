@@ -44,6 +44,13 @@ const noteSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // when the note was moved to Trash; null while it isn't in Trash. Notes
+  // saved before Trash existed have no value, which `deletedAt: null` matches
+  // too. MongoDB deletes trashed notes for good after TRASH_DAYS (see below).
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
   // notes saved before colors existed read back as "default" too
   color: {
     type: String,
@@ -94,6 +101,16 @@ noteSchema.index(
   { ...LIST_KEYS, title: 1, _id: 1 },
   { collation: TITLE_COLLATION }
 ); // title
+noteSchema.index({ userId: 1, isPinned: -1, deletedAt: -1, _id: -1 }); // Trash
+
+// MongoDB removes a note TRASH_DAYS after it was moved to Trash (its
+// background job runs about once a minute). Notes with deletedAt: null are
+// never removed.
+export const TRASH_DAYS = 30;
+noteSchema.index(
+  { deletedAt: 1 },
+  { expireAfterSeconds: TRASH_DAYS * 24 * 60 * 60 }
+);
 
 const Note = mongoose.model("Note", noteSchema);
 

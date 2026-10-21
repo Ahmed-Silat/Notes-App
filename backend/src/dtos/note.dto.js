@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { NOTE_COLORS } from "../models/note.model.js";
 import { decodeCursor } from "../utils/cursor.js";
-import { NOTE_SORT_NAMES } from "../utils/noteSort.js";
+import { LIST_SORT_NAMES } from "../utils/noteSort.js";
 
 const title = z
   .string({ error: "Title is required" })
@@ -83,12 +83,17 @@ export const listNotesDto = z.object({
   archived: z
     .stringbool({ error: "archived must be true or false" })
     .default(false),
+  // ?trashed=true lists the notes in Trash (archived or not) instead, most
+  // recently deleted first whatever `sort` says
+  trashed: z
+    .stringbool({ error: "trashed must be true or false" })
+    .default(false),
   // ?tag=work lists (or searches) only the notes with that exact tag
   tag: z.string().trim().min(1, "tag can't be empty").optional(),
   // ?sort=edited; pinned notes always come first (utils/noteSort.js)
   sort: z
-    .enum(NOTE_SORT_NAMES, {
-      error: `sort must be one of: ${NOTE_SORT_NAMES.join(", ")}`,
+    .enum(LIST_SORT_NAMES, {
+      error: `sort must be one of: ${LIST_SORT_NAMES.join(", ")}`,
     })
     .default("newest"),
 });

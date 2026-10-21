@@ -6,10 +6,13 @@ import { sanitizeHtml } from "../utils/sanitizeHtml.js";
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const getOwnedNote = async (userId, noteId) => {
+// The user's note, if it's in Trash (`trashed`) or not. Notes in Trash can
+// only be restored or deleted forever, so for anything else they count as
+// not found.
+const getOwnedNote = async (userId, noteId, { trashed = false } = {}) => {
   const note = await noteRepository.findById(noteId);
 
-  if (!note) {
+  if (!note || Boolean(note.deletedAt) !== trashed) {
     throw new ApiError(404, "Note not found");
   }
 
@@ -118,8 +121,11 @@ export const getSharedNote = async (shareId) => {
 
 const getPage = async (
   userId,
-  { search, archived, tag, sort, cursor, limit },
+  { search, archived, trashed, tag, sort: requestedSort, cursor, limit },
 ) => {
+  // Trash is always most recently deleted first
+  const sort = trashed ? "deleted" : requestedSort;
+
   // a cursor only works with the sort it came from
   if (cursor && cursor.sort !== sort) {
     throw new ApiError(400, "Invalid cursor");
@@ -129,12 +135,13 @@ const getPage = async (
     noteRepository.findPageByUser(userId, {
       search,
       archived,
+      trashed,
       tag,
       sort,
       cursor,
       limit,
     }),
-    noteRepository.countByUser(userId, { search, archived, tag }),
+    noteRepository.countByUser(userId, { search, archived, trashed, tag }),
   ]);
 
   const hasMore = notes.length > limit;
@@ -147,18 +154,42 @@ const getPage = async (
   };
 };
 
-export const getNotes = (userId, { archived, tag, sort, cursor, limit }) =>
-  getPage(userId, { archived, tag, sort, cursor, limit });
+export const getNotes = (
+  userId,
+  { archived, trashed, tag, sort, cursor, limit },
+) => getPage(userId, { archived, trashed, tag, sort, cursor, limit });
 
+// Moves the note to Trash, where MongoDB deletes it for good after
+// TRASH_DAYS (models/note.model.js) unless it's restored first.
 export const deleteNote = async (userId, noteId) => {
-  const note = await noteRepository.findByIdAndUser(noteId, userId);
+  const note = await getOwnedNote(userId, noteId);
 
-  if (!note) {
-    throw new ApiError(404, "Note not found");
-  }
+  note.deletedAt = new Date();
+  // Trash has no pinned section, and a trashed note can't stay public
+  note.isPinned = false;
+  note.shareId = undefined;
 
+  return noteRepository.save(note);
+};
+
+// Takes the note out of Trash, back to the notes or the archive, wherever it
+// was. It comes back unpinned and unshared.
+export const restoreNote = async (userId, noteId) => {
+  const note = await getOwnedNote(userId, noteId, { trashed: true });
+
+  note.deletedAt = null;
+
+  return noteRepository.save(note);
+};
+
+// Only for notes already in Trash, so a note can't be lost in one step.
+export const deleteNoteForever = async (userId, noteId) => {
+  await getOwnedNote(userId, noteId, { trashed: true });
   await noteRepository.deleteById(noteId);
 };
+
+// Deletes every note in the user's Trash. Returns how many.
+export const emptyTrash = (userId) => noteRepository.deleteTrashedByUser(userId);
 
 // "note  description" matches "Note Description": the words must appear in
 // order, with any amount of whitespace between them.
@@ -168,11 +199,12 @@ const buildSearchRegex = (query) =>
 export const searchNotes = (
   userId,
   query,
-  { archived, tag, sort, cursor, limit },
+  { archived, trashed, tag, sort, cursor, limit },
 ) =>
   getPage(userId, {
     search: buildSearchRegex(query),
     archived,
+    trashed,
     tag,
     sort,
     cursor,
