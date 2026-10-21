@@ -8,6 +8,7 @@ import NoteCard from "@/components/Cards/NoteCard";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import DeleteNoteDialog from "@/components/Notes/DeleteNoteDialog";
 import NoteDialog from "@/components/Notes/NoteDialog";
+import ShareNoteDialog from "@/components/Notes/ShareNoteDialog";
 import {
   NotesGrid,
   NotesSkeleton,
@@ -30,6 +31,7 @@ const Archive = () => {
     useNoteActions(reload);
   const noteDialog = useNoteDialog();
   const [deleteDialog, setDeleteDialog] = useState({ open: false, note: null });
+  const [shareDialog, setShareDialog] = useState({ open: false, note: null });
 
   const confirmDelete = () => {
     setDeleteDialog((dialog) => ({ ...dialog, open: false }));
@@ -61,12 +63,14 @@ const Archive = () => {
             content={note.content}
             tags={note.tags}
             isArchived
+            isShared={Boolean(note.shareId)}
             color={note.color}
             busyLabel={busyNotes[note._id]}
             onOpen={() => noteDialog.openView(note)}
             onEdit={() => noteDialog.openEdit(note)}
             onDelete={() => setDeleteDialog({ open: true, note })}
             onColorChange={(color) => changeColor(note, color)}
+            onShare={() => setShareDialog({ open: true, note })}
             onArchive={() => toggleArchived(note)}
           />
         ))}
@@ -108,8 +112,22 @@ const Archive = () => {
       <DeleteNoteDialog
         note={deleteDialog.note}
         open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog((dialog) => ({ ...dialog, open }))}
+        onOpenChange={(open) =>
+          setDeleteDialog((dialog) => ({ ...dialog, open }))
+        }
         onConfirm={confirmDelete}
+      />
+
+      <ShareNoteDialog
+        note={shareDialog.note}
+        open={shareDialog.open}
+        onOpenChange={(open) =>
+          setShareDialog((dialog) => ({ ...dialog, open }))
+        }
+        onShareChange={(note) => {
+          setShareDialog((dialog) => ({ ...dialog, note }));
+          reload();
+        }}
       />
     </>
   );

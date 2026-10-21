@@ -27,6 +27,11 @@ export const noteIdParamDto = z.object({
   noteId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid note id"),
 });
 
+// share ids are 16 random bytes in base64url (services/note.service.js)
+export const shareIdParamDto = z.object({
+  shareId: z.string().regex(/^[\w-]{22}$/, "Invalid share link"),
+});
+
 export const createNoteDto = z.object({
   title,
   content,

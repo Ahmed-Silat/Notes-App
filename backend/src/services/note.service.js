@@ -1,6 +1,8 @@
+import crypto from "node:crypto";
 import * as noteRepository from "../repositories/note.repository.js";
 import { ApiError } from "../utils/ApiError.js";
 import { encodeCursor } from "../utils/cursor.js";
+import { sanitizeHtml } from "../utils/sanitizeHtml.js";
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -19,11 +21,28 @@ const getOwnedNote = async (userId, noteId) => {
   return note;
 };
 
+// Content that was nothing but unsafe HTML is empty once cleaned.
+const cleanContent = (content) => {
+  const clean = sanitizeHtml(content).trim();
+  if (!clean) throw new ApiError(400, "Content is required");
+  return clean;
+};
+
 export const createNote = (userId, { title, content, tags, color }) =>
-  noteRepository.create({ title, content, tags, color, userId });
+  noteRepository.create({
+    title,
+    content: cleanContent(content),
+    tags,
+    color,
+    userId,
+  });
 
 export const updateNote = async (userId, noteId, changes) => {
   const note = await getOwnedNote(userId, noteId);
+
+  if (changes.content !== undefined) {
+    changes = { ...changes, content: cleanContent(changes.content) };
+  }
 
   for (const [key, value] of Object.entries(changes)) {
     if (value !== undefined) note[key] = value;
@@ -62,9 +81,44 @@ export const updateNoteColor = async (userId, noteId, color) => {
   return noteRepository.save(note);
 };
 
+// Turns on the note's public read-only link, or keeps the one it has, so
+// sharing twice gives the same link.
+export const shareNote = async (userId, noteId) => {
+  const note = await getOwnedNote(userId, noteId);
+
+  if (!note.shareId) {
+    note.shareId = crypto.randomBytes(16).toString("base64url");
+    await noteRepository.save(note);
+  }
+
+  return note;
+};
+
+// The link stops working right away. Sharing again later makes a new one.
+export const stopSharingNote = async (userId, noteId) => {
+  const note = await getOwnedNote(userId, noteId);
+
+  if (note.shareId) {
+    note.shareId = undefined;
+    await noteRepository.save(note);
+  }
+
+  return note;
+};
+
+export const getSharedNote = async (shareId) => {
+  const note = await noteRepository.findSharedByShareId(shareId);
+
+  if (!note) {
+    throw new ApiError(404, "This note isn't shared anymore");
+  }
+
+  return note;
+};
+
 const getPage = async (
   userId,
-  { search, archived, tag, sort, cursor, limit }
+  { search, archived, tag, sort, cursor, limit },
 ) => {
   // a cursor only works with the sort it came from
   if (cursor && cursor.sort !== sort) {
@@ -114,7 +168,7 @@ const buildSearchRegex = (query) =>
 export const searchNotes = (
   userId,
   query,
-  { archived, tag, sort, cursor, limit }
+  { archived, tag, sort, cursor, limit },
 ) =>
   getPage(userId, {
     search: buildSearchRegex(query),

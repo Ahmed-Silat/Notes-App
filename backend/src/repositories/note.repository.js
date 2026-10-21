@@ -8,6 +8,12 @@ export const findById = (id) => Note.findById(id);
 
 export const findByIdAndUser = (id, userId) => Note.findOne({ _id: id, userId });
 
+// What a shared note's public page shows: no ids, owner or other settings.
+export const findSharedByShareId = (shareId) =>
+  Note.findOne({ shareId })
+    .select("title content tags color createdAt editedAt -_id")
+    .lean();
+
 // Pinned first, then the sort's field; see utils/noteSort.js.
 const pageSort = (sort) => {
   const { field, order } = NOTE_SORTS[sort];
