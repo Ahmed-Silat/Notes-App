@@ -60,6 +60,63 @@ export const resetPassword = async (token, newPassword) => {
   unwrap(await authClient.resetPassword({ token, newPassword }));
 };
 
+// Sends the browser to Google to pick an account. Google comes back to
+// /auth/callback, with ?error=<code> when signing in didn't work.
+export const signInWithGoogle = async () => {
+  const callbackURL = `${window.location.origin}/auth/callback`;
+  unwrap(
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL,
+      errorCallbackURL: callbackURL,
+    })
+  );
+};
+
+// The logged-in user (e.g. right after Google redirected back), or null.
+export const getSignedInUser = async () => {
+  const session = unwrap(await authClient.getSession());
+  return session?.user ? toUser(session.user) : null;
+};
+
+// How the logged-in user can sign in: with a password, with Google, or both.
+export const getSignInMethods = async () => {
+  const accounts = unwrap(await authClient.listAccounts());
+  const providers = accounts.map((account) => account.providerId);
+  return {
+    hasPassword: providers.includes("credential"),
+    hasGoogle: providers.includes("google"),
+  };
+};
+
+// Connects a Google account (with the same email) to the logged-in account.
+// Google comes back to Settings with ?connected=google, or ?error=<code>.
+export const connectGoogle = async () => {
+  const settingsURL = `${window.location.origin}/settings`;
+  unwrap(
+    await authClient.linkSocial({
+      provider: "google",
+      callbackURL: `${settingsURL}?connected=google`,
+      errorCallbackURL: settingsURL,
+    })
+  );
+};
+
+// Before an account without a password is deleted: sends the browser through
+// Google again to prove it's the owner. Only the Google account already
+// connected is accepted, so it can't switch to another account. Comes back to
+// Settings with ?confirm-delete=google, plus &error=<code> when it failed.
+export const confirmWithGoogleToDelete = async () => {
+  const settingsURL = `${window.location.origin}/settings?confirm-delete=google`;
+  unwrap(
+    await authClient.linkSocial({
+      provider: "google",
+      callbackURL: settingsURL,
+      errorCallbackURL: settingsURL,
+    })
+  );
+};
+
 export const signout = async () => {
   unwrap(await authClient.signOut());
   return { data: { success: true, message: "User logged out successfully" } };
@@ -84,7 +141,10 @@ export const changePassword = async (currentPassword, newPassword) => {
   );
 };
 
-// Permanently deletes the account and all its notes, and logs it out.
+// Permanently deletes the account and all its notes, and logs it out. Without
+// a password (accounts that only use Google), the user must have confirmed
+// with Google in the last 5 minutes (confirmWithGoogleToDelete), or it fails
+// with the code "GOOGLE_CONFIRMATION_REQUIRED".
 export const deleteAccount = async (password) => {
   unwrap(await authClient.deleteUser({ password }));
 };

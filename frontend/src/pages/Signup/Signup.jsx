@@ -6,11 +6,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2, Lock, Mail, User } from "lucide-react";
-import { singnUp } from "@/Service/AuthService";
+import { signInWithGoogle, singnUp } from "@/Service/AuthService";
+import { useGoogleRedirect } from "@/hooks/useGoogleRedirect";
 import { getErrorMessage } from "@/lib/helper";
 import { NAME_MAX_LENGTH, signupSchema } from "@/schemas/auth.schema";
 import AuthLayout from "@/components/layout/AuthLayout";
 import FormField from "@/components/Input/FormField";
+import GoogleButton, { OrDivider } from "@/components/GoogleButton";
 import TextLink from "@/components/TextLink";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +29,10 @@ const Signup = () => {
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
     mode: "onTouched",
   });
+
+  const google = useGoogleRedirect(signInWithGoogle);
+  // the form and links are disabled while signing up or going to Google
+  const isBusy = isSubmitting || google.isRedirecting;
 
   const onSubmit = async (values) => {
     try {
@@ -59,7 +65,7 @@ const Signup = () => {
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* disables every input and button while the request is in flight */}
-        <fieldset disabled={isSubmitting} className="grid min-w-0 gap-5">
+        <fieldset disabled={isBusy} className="grid min-w-0 gap-5">
           <FormField
             {...fieldProps("name")}
             label="Full name"
@@ -100,7 +106,7 @@ const Signup = () => {
             type="submit"
             size="lg"
             className="mt-1 w-full"
-            disabled={isSubmitting}
+            disabled={isBusy}
           >
             {isSubmitting && <Loader2 className="animate-spin" />}
             Create account
@@ -108,11 +114,18 @@ const Signup = () => {
         </fieldset>
       </form>
 
+      <OrDivider />
+      <GoogleButton
+        isRedirecting={google.isRedirecting}
+        disabled={isSubmitting}
+        onClick={google.redirect}
+      />
+
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <TextLink
           to="/login"
-          disabled={isSubmitting}
+          disabled={isBusy}
           className="font-medium text-foreground underline-offset-4 hover:underline"
         >
           Log in

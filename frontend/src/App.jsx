@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
 import Settings from "./pages/Settings/Settings";
 import SharedNote from "./pages/SharedNote/SharedNote";
+import AuthCallback from "./pages/AuthCallback/AuthCallback";
 import AppLayout from "./components/layout/AppLayout";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -32,6 +33,8 @@ const App = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Google sends the browser back here after signing in */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
           {/* a shared note's public link; works signed in or out */}
           <Route path="/s/:shareId" element={<SharedNote />} />
           {/* any other URL (e.g. /index.html or a typo) */}

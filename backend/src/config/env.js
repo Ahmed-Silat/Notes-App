@@ -22,6 +22,10 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   EMAIL_FROM: z.string().default("Good Notes <no-reply@goodnotes.app>"),
+  // "Continue with Google": an OAuth client (type: Web application) from
+  // Google Cloud Console. Without both, signing in with Google is turned off.
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
   // Optional comma-separated DNS servers, e.g. "1.1.1.1,8.8.8.8". Needed on
   // Windows with Node 24, which can pick 127.0.0.1 as its DNS server and then
   // fail the SRV lookup for "mongodb+srv://" URIs (querySrv ECONNREFUSED).
