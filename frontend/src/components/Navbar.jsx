@@ -1,5 +1,5 @@
 import { saveStateNow } from "@/redux/store";
-import { Archive, LogOut, Settings, StickyNote } from "lucide-react";
+import { Archive, LogOut, Settings, StickyNote, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ import {
 const NAV_LINKS = [
   { to: "/", label: "Notes", icon: StickyNote },
   { to: "/archive", label: "Archive", icon: Archive },
+  { to: "/trash", label: "Trash", icon: Trash2 },
 ];
 
 const Navbar = ({ onLoggingOutChange }) => {

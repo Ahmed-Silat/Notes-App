@@ -43,7 +43,8 @@ const DownloadPdfButton = ({ note }) => {
   );
 };
 
-// Read-only view of a note, rendered inside <NoteDialog>.
+// Read-only view of a note, rendered inside <NoteDialog>. Without `onEdit`
+// (notes in Trash) there's no Edit button.
 const ViewNote = ({ note, onEdit }) => (
   <>
     <DialogHeader className="pr-8">
@@ -74,10 +75,12 @@ const ViewNote = ({ note, onEdit }) => (
           Close
         </Button>
       </DialogClose>
-      <Button type="button" onClick={onEdit}>
-        <Pencil />
-        Edit note
-      </Button>
+      {onEdit && (
+        <Button type="button" onClick={onEdit}>
+          <Pencil />
+          Edit note
+        </Button>
+      )}
     </DialogFooter>
   </>
 );

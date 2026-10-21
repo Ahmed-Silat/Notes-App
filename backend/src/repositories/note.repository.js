@@ -6,8 +6,6 @@ export const create = (data) => Note.create(data);
 
 export const findById = (id) => Note.findById(id);
 
-export const findByIdAndUser = (id, userId) => Note.findOne({ _id: id, userId });
-
 // What a shared note's public page shows: no ids, owner or other settings.
 export const findSharedByShareId = (shareId) =>
   Note.findOne({ shareId })
@@ -20,11 +18,15 @@ const pageSort = (sort) => {
   return { isPinned: -1, [field]: order, _id: order };
 };
 
-// The user's archived or unarchived notes, optionally only those with a tag.
-// Search looks at the title, the plain text of the content (not its HTML, so
-// formatting and &nbsp; don't get in the way) and the tags.
-const userFilter = (userId, { search, archived = false, tag }) => {
-  const filter = { userId, isArchived: archived };
+// The user's archived or unarchived notes, or those in Trash, optionally only
+// those with a tag. Search looks at the title, the plain text of the content
+// (not its HTML, so formatting and &nbsp; don't get in the way) and the tags.
+const userFilter = (userId, { search, archived = false, trashed = false, tag }) => {
+  // Trash holds archived and unarchived notes alike; restoring puts each back
+  // where it was
+  const filter = trashed
+    ? { userId, deletedAt: { $ne: null } }
+    : { userId, isArchived: archived, deletedAt: null };
   // exact match on any element of the tags array
   if (tag) filter.tags = tag;
 
@@ -58,9 +60,9 @@ const afterCursor = (sort, { isPinned, value, id }) => {
 // Fetches one extra note so the caller can tell whether another page exists.
 export const findPageByUser = (
   userId,
-  { search, archived, tag, sort, cursor, limit }
+  { search, archived, trashed, tag, sort, cursor, limit }
 ) => {
-  const filter = userFilter(userId, { search, archived, tag });
+  const filter = userFilter(userId, { search, archived, trashed, tag });
 
   const query = Note.find(
     cursor ? { $and: [filter, afterCursor(sort, cursor)] } : filter
@@ -72,12 +74,18 @@ export const findPageByUser = (
   return sort === "title" ? query.collation(TITLE_COLLATION) : query;
 };
 
-export const countByUser = (userId, { search, archived, tag } = {}) =>
-  Note.countDocuments(userFilter(userId, { search, archived, tag }));
+export const countByUser = (userId, { search, archived, trashed, tag } = {}) =>
+  Note.countDocuments(userFilter(userId, { search, archived, trashed, tag }));
 
 export const save = (note) => note.save();
 
 export const deleteById = (id) => Note.deleteOne({ _id: id });
+
+// Empty trash: removes the user's notes in Trash. Returns how many.
+export const deleteTrashedByUser = async (userId) => {
+  const result = await Note.deleteMany({ userId, deletedAt: { $ne: null } });
+  return result.deletedCount;
+};
 
 // Removes all of a user's notes, when their account is deleted.
 export const deleteByUser = (userId) => Note.deleteMany({ userId });

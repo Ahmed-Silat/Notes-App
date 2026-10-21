@@ -32,8 +32,35 @@ export const updateUserNotes = async (noteId, title, content, tags, color) => {
   return data;
 };
 
+// Moves the note to Trash; restoreNote brings it back
 export const deleteUserNotes = async (noteId) => {
   const data = await api.delete(`/note/delete/${noteId}`);
+  return data;
+};
+
+// One page of the notes in Trash, most recently deleted first:
+// { notes, total, nextCursor }
+export const getUserTrashedNotes = async ({ limit, cursor } = {}) => {
+  const data = await api.get("/note/all", {
+    params: { limit, cursor, trashed: true },
+  });
+  return data;
+};
+
+export const restoreNote = async (noteId) => {
+  const data = await api.put(`/note/restore/${noteId}`);
+  return data;
+};
+
+// Only for notes in Trash; can't be undone
+export const deleteNoteForever = async (noteId) => {
+  const data = await api.delete(`/note/delete-forever/${noteId}`);
+  return data;
+};
+
+// Deletes every note in Trash: { deletedCount }
+export const emptyTrash = async () => {
+  const data = await api.delete("/note/empty-trash");
   return data;
 };
 

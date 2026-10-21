@@ -12,7 +12,6 @@ import { useNotesList } from "@/hooks/useNotesList";
 import NoteCard from "@/components/Cards/NoteCard";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import SearchBar from "@/components/SearchBar/SearchBar";
-import DeleteNoteDialog from "@/components/Notes/DeleteNoteDialog";
 import NoteDialog from "@/components/Notes/NoteDialog";
 import ShareNoteDialog from "@/components/Notes/ShareNoteDialog";
 import SortMenu from "@/components/Notes/SortMenu";
@@ -94,7 +93,6 @@ const Home = () => {
   const { busyNotes, deleteNote, togglePinned, toggleArchived, changeColor } =
     useNoteActions(getAllNotes);
   const noteDialog = useNoteDialog();
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, note: null });
   const [shareDialog, setShareDialog] = useState({ open: false, note: null });
 
   const updateSearchParam = useCallback(
@@ -152,11 +150,6 @@ const Home = () => {
     setSearchQuery(appliedQuery);
   }, [location.key, appliedQuery]);
 
-  const confirmDelete = () => {
-    setDeleteDialog((dialog) => ({ ...dialog, open: false }));
-    deleteNote(deleteDialog.note);
-  };
-
   const onClearSearch = () => {
     setSearchQuery("");
     updateSearchParam("");
@@ -180,7 +173,8 @@ const Home = () => {
         busyLabel={busyNotes[note._id]}
         onOpen={() => noteDialog.openView(note)}
         onEdit={() => noteDialog.openEdit(note)}
-        onDelete={() => setDeleteDialog({ open: true, note })}
+        // to Trash, with an undo in the toast, so no confirmation
+        onDelete={() => deleteNote(note)}
         onPinNote={() => togglePinned(note)}
         onColorChange={(color) => changeColor(note, color)}
         onShare={() => setShareDialog({ open: true, note })}
@@ -350,15 +344,6 @@ const Home = () => {
         openEdit={noteDialog.openEdit}
         close={noteDialog.close}
         onSaved={getAllNotes}
-      />
-
-      <DeleteNoteDialog
-        note={deleteDialog.note}
-        open={deleteDialog.open}
-        onOpenChange={(open) =>
-          setDeleteDialog((dialog) => ({ ...dialog, open }))
-        }
-        onConfirm={confirmDelete}
       />
 
       <ShareNoteDialog

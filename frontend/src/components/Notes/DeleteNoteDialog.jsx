@@ -9,21 +9,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Confirmation before a note is permanently deleted.
-const DeleteNoteDialog = ({ note, open, onOpenChange, onConfirm }) => (
+// Confirmation before a note in Trash is deleted for good. `title`,
+// `description` and `confirmLabel` replace the texts for other permanent
+// deletes, e.g. emptying the trash.
+const DeleteNoteDialog = ({
+  note,
+  open,
+  onOpenChange,
+  onConfirm,
+  title = "Delete this note forever?",
+  description = `“${note?.title}” will be permanently deleted. This can't be undone.`,
+  confirmLabel = "Delete forever",
+}) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>Delete this note?</AlertDialogTitle>
-        <AlertDialogDescription>
-          “{note?.title}” will be permanently deleted. This can&apos;t be
-          undone.
-        </AlertDialogDescription>
+        <AlertDialogTitle>{title}</AlertDialogTitle>
+        <AlertDialogDescription>{description}</AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
         <AlertDialogAction variant="destructive" onClick={onConfirm}>
-          Delete
+          {confirmLabel}
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>

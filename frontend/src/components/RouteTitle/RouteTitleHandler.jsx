@@ -31,6 +31,9 @@ const RouteTitleHandler = () => {
       case "/archive":
         title = "Archive | Notes App";
         break;
+      case "/trash":
+        title = "Trash | Notes App";
+        break;
       case "/settings":
         title = "Settings | Notes App";
         break;

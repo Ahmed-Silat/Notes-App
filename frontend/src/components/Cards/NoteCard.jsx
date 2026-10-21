@@ -6,6 +6,7 @@ import {
   Loader2,
   Pencil,
   Pin,
+  RotateCcw,
   Share2,
   Trash2,
 } from "lucide-react";
@@ -63,6 +64,9 @@ const NoteCard = ({
   onOpen,
   onEdit,
   onDelete,
+  // optional: a card in Trash, which only has Restore and Delete forever
+  // (onDelete)
+  onRestore,
 }) => {
   const hasContent = Boolean(htmlToText(content));
   const isBusy = Boolean(busyLabel);
@@ -162,28 +166,36 @@ const NoteCard = ({
 
         {/* stays visible while the color menu is open */}
         <div className="flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-has-[button:focus-visible]:opacity-100 sm:group-has-aria-expanded:opacity-100">
-          <ActionButton label="Set reminder">
-            <BellPlus />
-          </ActionButton>
-          {onColorChange && (
-            <NoteColorMenu value={color ?? "default"} onChange={onColorChange} />
-          )}
-          {onShare && (
-            <ActionButton label="Share note" onClick={onShare}>
-              <Share2 />
+          {onRestore ? (
+            <ActionButton label="Restore note" onClick={onRestore}>
+              <RotateCcw />
             </ActionButton>
+          ) : (
+            <>
+              <ActionButton label="Set reminder">
+                <BellPlus />
+              </ActionButton>
+              {onColorChange && (
+                <NoteColorMenu value={color ?? "default"} onChange={onColorChange} />
+              )}
+              {onShare && (
+                <ActionButton label="Share note" onClick={onShare}>
+                  <Share2 />
+                </ActionButton>
+              )}
+              <ActionButton
+                label={isArchived ? "Unarchive note" : "Archive note"}
+                onClick={onArchive}
+              >
+                {isArchived ? <ArchiveRestore /> : <Archive />}
+              </ActionButton>
+              <ActionButton label="Edit note" onClick={onEdit}>
+                <Pencil />
+              </ActionButton>
+            </>
           )}
           <ActionButton
-            label={isArchived ? "Unarchive note" : "Archive note"}
-            onClick={onArchive}
-          >
-            {isArchived ? <ArchiveRestore /> : <Archive />}
-          </ActionButton>
-          <ActionButton label="Edit note" onClick={onEdit}>
-            <Pencil />
-          </ActionButton>
-          <ActionButton
-            label="Delete note"
+            label={onRestore ? "Delete forever" : "Move to Trash"}
             onClick={onDelete}
             className="hover:bg-destructive/10 hover:text-destructive"
           >

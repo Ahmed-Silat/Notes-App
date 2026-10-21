@@ -40,12 +40,43 @@ export const getAllNotes = asyncHandler(async (req, res) => {
   });
 });
 
+// Moves the note to Trash; deleteNoteForever removes it for good.
 export const deleteNote = asyncHandler(async (req, res) => {
-  await noteService.deleteNote(req.user.id, req.params.noteId);
+  const note = await noteService.deleteNote(req.user.id, req.params.noteId);
 
   res.status(200).json({
     success: true,
-    message: "Note deleted successfully",
+    message: "Note moved to Trash",
+    note,
+  });
+});
+
+export const restoreNote = asyncHandler(async (req, res) => {
+  const note = await noteService.restoreNote(req.user.id, req.params.noteId);
+
+  res.status(200).json({
+    success: true,
+    message: "Note restored",
+    note,
+  });
+});
+
+export const deleteNoteForever = asyncHandler(async (req, res) => {
+  await noteService.deleteNoteForever(req.user.id, req.params.noteId);
+
+  res.status(200).json({
+    success: true,
+    message: "Note deleted forever",
+  });
+});
+
+export const emptyTrash = asyncHandler(async (req, res) => {
+  const deletedCount = await noteService.emptyTrash(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    message: "Trash emptied",
+    deletedCount,
   });
 });
 

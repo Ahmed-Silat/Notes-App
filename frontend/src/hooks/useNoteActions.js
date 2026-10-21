@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+  deleteNoteForever,
   deleteUserNotes,
+  restoreNote,
   updateArchivedNotes,
   updateNoteColor,
   updatePinnedNotes,
 } from "@/Service/NotesService";
 import { getErrorMessage } from "@/lib/helper";
 
-// The per-card note actions (delete, pin, archive, color). `reload` refreshes the
-// list; each card shows a loader until the refreshed list has arrived.
+// The per-card note actions (delete, pin, archive, color, and restore and
+// delete forever in Trash). `reload` refreshes the list; each card shows a
+// loader until the refreshed list has arrived.
 export const useNoteActions = (reload) => {
   // note id -> label shown on that card while it is being changed
   const [busyNotes, setBusyNotes] = useState({});
@@ -36,12 +39,52 @@ export const useNoteActions = (reload) => {
     }
   };
 
+  // Moves the note to Trash, with an undo in the toast. Trash unpins and
+  // unshares notes; undo pins it again, but a share link is gone for good.
   const deleteNote = (note) =>
     runAction(
       note,
-      "Deleting...",
+      "Moving to Trash...",
       () => deleteUserNotes(note._id),
-      () => toast.success("Note deleted")
+      () =>
+        toast.success("Moved to Trash", {
+          ...(note.shareId && { description: "Its share link was turned off." }),
+          action: {
+            label: "Undo",
+            onClick: () =>
+              runAction(
+                note,
+                "Restoring...",
+                async () => {
+                  const res = await restoreNote(note._id);
+                  if (!res.data.success || !note.isPinned) return res;
+                  return updatePinnedNotes(res.data.note);
+                },
+                () => toast.success("Note restored")
+              ),
+          },
+        })
+    );
+
+  // Trash page: back to the notes or the archive, wherever it was
+  const restore = (note) =>
+    runAction(
+      note,
+      "Restoring...",
+      () => restoreNote(note._id),
+      () =>
+        toast.success(
+          note.isArchived ? "Note restored to Archive" : "Note restored"
+        )
+    );
+
+  // Trash page, after a confirmation
+  const deleteForever = (note) =>
+    runAction(
+      note,
+      "Deleting...",
+      () => deleteNoteForever(note._id),
+      () => toast.success("Note deleted forever")
     );
 
   const togglePinned = (note) =>
@@ -84,5 +127,13 @@ export const useNoteActions = (reload) => {
     );
   };
 
-  return { busyNotes, deleteNote, togglePinned, toggleArchived, changeColor };
+  return {
+    busyNotes,
+    deleteNote,
+    togglePinned,
+    toggleArchived,
+    changeColor,
+    restore,
+    deleteForever,
+  };
 };
