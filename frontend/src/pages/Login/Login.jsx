@@ -5,7 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { login } from "@/Service/AuthService";
+import { login, signInWithGoogle } from "@/Service/AuthService";
+import { useGoogleRedirect } from "@/hooks/useGoogleRedirect";
 import {
   signInFailure,
   signInStart,
@@ -15,6 +16,7 @@ import { getErrorMessage } from "@/lib/helper";
 import { loginSchema } from "@/schemas/auth.schema";
 import AuthLayout from "@/components/layout/AuthLayout";
 import FormField from "@/components/Input/FormField";
+import GoogleButton, { OrDivider } from "@/components/GoogleButton";
 import TextLink from "@/components/TextLink";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +33,10 @@ const Login = () => {
     defaultValues: { email: "", password: "" },
     mode: "onTouched",
   });
+
+  const google = useGoogleRedirect(signInWithGoogle);
+  // the form and links are disabled while logging in or going to Google
+  const isBusy = isSubmitting || google.isRedirecting;
 
   const onSubmit = async (values) => {
     try {
@@ -62,7 +68,7 @@ const Login = () => {
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* disables every input and button while the request is in flight */}
-        <fieldset disabled={isSubmitting} className="grid min-w-0 gap-5">
+        <fieldset disabled={isBusy} className="grid min-w-0 gap-5">
           <FormField
             {...register("email")}
             label="Email"
@@ -85,7 +91,7 @@ const Login = () => {
 
           <TextLink
             to="/forgot-password"
-            disabled={isSubmitting}
+            disabled={isBusy}
             className="-mt-3 justify-self-end text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             Forgot password?
@@ -95,7 +101,7 @@ const Login = () => {
             type="submit"
             size="lg"
             className="mt-1 w-full"
-            disabled={isSubmitting}
+            disabled={isBusy}
           >
             {isSubmitting && <Loader2 className="animate-spin" />}
             Log in
@@ -103,11 +109,18 @@ const Login = () => {
         </fieldset>
       </form>
 
+      <OrDivider />
+      <GoogleButton
+        isRedirecting={google.isRedirecting}
+        disabled={isSubmitting}
+        onClick={google.redirect}
+      />
+
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
         <TextLink
           to="/signup"
-          disabled={isSubmitting}
+          disabled={isBusy}
           className="font-medium text-foreground underline-offset-4 hover:underline"
         >
           Sign up

@@ -25,6 +25,9 @@ const RouteTitleHandler = () => {
       case "/reset-password":
         title = "Reset Password | Notes App";
         break;
+      case "/auth/callback":
+        title = "Signing In | Notes App";
+        break;
       case "/reminders":
         title = "Reminders | Notes App";
         break;
