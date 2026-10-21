@@ -2,9 +2,11 @@ import {
   Archive,
   ArchiveRestore,
   BellPlus,
+  Link2,
   Loader2,
   Pencil,
   Pin,
+  Share2,
   Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +49,8 @@ const NoteCard = ({
   tags,
   isPinned,
   isArchived,
+  // the note has an active public link
+  isShared,
   color,
   busyLabel,
   // optional: archived notes can't be pinned, so their cards have no pin button
@@ -54,6 +58,7 @@ const NoteCard = ({
   // optional: makes each tag a button that filters the list by it
   onTagClick,
   onColorChange,
+  onShare,
   onArchive,
   onOpen,
   onEdit,
@@ -137,10 +142,23 @@ const NoteCard = ({
       )}
 
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-        <time dateTime={date} className="text-xs text-muted-foreground">
-          {datePrefix && `${datePrefix} `}
-          {formatDate(date)}
-        </time>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <time dateTime={date}>
+            {datePrefix && `${datePrefix} `}
+            {formatDate(date)}
+          </time>
+          {isShared && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* above the stretched button, so hovering shows the tooltip */}
+                <span role="img" aria-label="Shared by link" className="relative z-10">
+                  <Link2 className="size-3.5" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Shared by link</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
 
         {/* stays visible while the color menu is open */}
         <div className="flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-has-[button:focus-visible]:opacity-100 sm:group-has-aria-expanded:opacity-100">
@@ -149,6 +167,11 @@ const NoteCard = ({
           </ActionButton>
           {onColorChange && (
             <NoteColorMenu value={color ?? "default"} onChange={onColorChange} />
+          )}
+          {onShare && (
+            <ActionButton label="Share note" onClick={onShare}>
+              <Share2 />
+            </ActionButton>
           )}
           <ActionButton
             label={isArchived ? "Unarchive note" : "Archive note"}

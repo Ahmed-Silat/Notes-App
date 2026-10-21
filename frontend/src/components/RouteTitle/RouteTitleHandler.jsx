@@ -34,9 +34,12 @@ const RouteTitleHandler = () => {
       case "/settings":
         title = "Settings | Notes App";
         break;
-      // every other path renders the NotFound page
+      // /s/<id> is a shared note (its page shows the note's title once
+      // loaded); every other path renders the NotFound page
       default:
-        title = "Page Not Found | Notes App";
+        title = path.startsWith("/s/")
+          ? "Shared Note | Notes App"
+          : "Page Not Found | Notes App";
     }
 
     document.title = title;

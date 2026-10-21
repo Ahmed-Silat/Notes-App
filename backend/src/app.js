@@ -4,7 +4,7 @@ import { toNodeHandler } from "better-auth/node";
 import { getAuth } from "./config/auth.js";
 import { CORS_ORIGINS } from "./config/env.js";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
-import { notesRateLimit } from "./middlewares/rateLimit.middleware.js";
+import { apiRateLimit } from "./middlewares/rateLimit.middleware.js";
 import routes from "./routes/index.js";
 
 const app = express();
@@ -28,7 +28,7 @@ app.all("/api/auth/*", (req, res) => {
 
 app.use(express.json());
 
-app.use("/api/note", notesRateLimit);
+app.use(["/api/note", "/api/public"], apiRateLimit);
 app.use("/api", routes);
 
 app.use(notFound);

@@ -54,6 +54,13 @@ const noteSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // the secret part of the note's public read-only link (/s/<shareId>); only
+  // set while the note is shared. Sparse, so notes without one don't clash.
+  shareId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

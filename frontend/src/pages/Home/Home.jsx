@@ -14,6 +14,7 @@ import EmptyState from "@/components/EmptyState/EmptyState";
 import SearchBar from "@/components/SearchBar/SearchBar";
 import DeleteNoteDialog from "@/components/Notes/DeleteNoteDialog";
 import NoteDialog from "@/components/Notes/NoteDialog";
+import ShareNoteDialog from "@/components/Notes/ShareNoteDialog";
 import SortMenu from "@/components/Notes/SortMenu";
 import {
   NotesGrid,
@@ -68,12 +69,16 @@ const Home = () => {
   // from the start.
   const fetchPage = useCallback(
     (page) => {
-      const filters = { ...page, tag: activeTag || undefined, sort: activeSort };
+      const filters = {
+        ...page,
+        tag: activeTag || undefined,
+        sort: activeSort,
+      };
       return appliedQuery
         ? getUserSearchNotes(appliedQuery, filters)
         : getUserAllNotes(filters);
     },
-    [appliedQuery, activeTag, activeSort]
+    [appliedQuery, activeTag, activeSort],
   );
   const {
     notes: allNotes,
@@ -90,6 +95,7 @@ const Home = () => {
     useNoteActions(getAllNotes);
   const noteDialog = useNoteDialog();
   const [deleteDialog, setDeleteDialog] = useState({ open: false, note: null });
+  const [shareDialog, setShareDialog] = useState({ open: false, note: null });
 
   const updateSearchParam = useCallback(
     (query) => {
@@ -100,7 +106,7 @@ const Home = () => {
         replace: true,
       });
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   // A new history entry, so Back returns to the list before the filter.
@@ -119,7 +125,7 @@ const Home = () => {
     if (sort === activeSort) return;
     isOwnNavigation.current = true;
     setSearchParams((params) =>
-      withParam(params, SORT_PARAM, sort === DEFAULT_SORT ? "" : sort)
+      withParam(params, SORT_PARAM, sort === DEFAULT_SORT ? "" : sort),
     );
   };
 
@@ -169,6 +175,7 @@ const Home = () => {
         content={note.content}
         tags={note.tags}
         isPinned={note.isPinned}
+        isShared={Boolean(note.shareId)}
         color={note.color}
         busyLabel={busyNotes[note._id]}
         onOpen={() => noteDialog.openView(note)}
@@ -176,6 +183,7 @@ const Home = () => {
         onDelete={() => setDeleteDialog({ open: true, note })}
         onPinNote={() => togglePinned(note)}
         onColorChange={(color) => changeColor(note, color)}
+        onShare={() => setShareDialog({ open: true, note })}
         onArchive={() => toggleArchived(note)}
         onTagClick={updateTagParam}
       />
@@ -275,7 +283,9 @@ const Home = () => {
             )}
             {activeTag && (
               <Badge variant="secondary" className="h-6 gap-1 pr-1 pl-2.5">
-                <span className="font-normal text-muted-foreground">Tagged</span>
+                <span className="font-normal text-muted-foreground">
+                  Tagged
+                </span>
                 #{activeTag}
                 <button
                   type="button"
@@ -345,8 +355,23 @@ const Home = () => {
       <DeleteNoteDialog
         note={deleteDialog.note}
         open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog((dialog) => ({ ...dialog, open }))}
+        onOpenChange={(open) =>
+          setDeleteDialog((dialog) => ({ ...dialog, open }))
+        }
         onConfirm={confirmDelete}
+      />
+
+      <ShareNoteDialog
+        note={shareDialog.note}
+        open={shareDialog.open}
+        onOpenChange={(open) =>
+          setShareDialog((dialog) => ({ ...dialog, open }))
+        }
+        // the dialog shows the new link; the refreshed list updates the card
+        onShareChange={(note) => {
+          setShareDialog((dialog) => ({ ...dialog, note }));
+          getAllNotes();
+        }}
       />
     </>
   );

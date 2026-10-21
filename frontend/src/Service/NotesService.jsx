@@ -39,7 +39,7 @@ export const deleteUserNotes = async (noteId) => {
 
 export const getUserSearchNotes = async (
   query,
-  { limit, cursor, tag, sort } = {}
+  { limit, cursor, tag, sort } = {},
 ) => {
   const data = await api.get("/note/search", {
     params: { query, limit, cursor, tag, sort },
@@ -56,6 +56,26 @@ export const updatePinnedNotes = async (noteData) => {
 
 export const updateNoteColor = async (noteId, color) => {
   const data = await api.put(`/note/update-note-color/${noteId}`, { color });
+  return data;
+};
+
+// Turns on the note's public link (or keeps the one it has): { note }, with
+// the link's id in note.shareId
+export const shareNote = async (noteId) => {
+  const data = await api.put(`/note/share/${noteId}`);
+  return data;
+};
+
+// Turns the link off; it stops working right away
+export const stopSharingNote = async (noteId) => {
+  const data = await api.delete(`/note/share/${noteId}`);
+  return data;
+};
+
+// A shared note, no login needed: { note } with title, content, tags, color
+// and dates. 404 (or 400 for a malformed link) when it isn't shared.
+export const getSharedNote = async (shareId) => {
+  const data = await api.get(`/public/notes/${encodeURIComponent(shareId)}`);
   return data;
 };
 

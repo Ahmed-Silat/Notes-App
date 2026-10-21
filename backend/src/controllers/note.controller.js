@@ -91,6 +91,40 @@ export const updateNoteColor = asyncHandler(async (req, res) => {
   });
 });
 
+export const shareNote = asyncHandler(async (req, res) => {
+  const note = await noteService.shareNote(req.user.id, req.params.noteId);
+
+  res.status(200).json({
+    success: true,
+    message: "Share link created",
+    note,
+  });
+});
+
+export const stopSharingNote = asyncHandler(async (req, res) => {
+  const note = await noteService.stopSharingNote(
+    req.user.id,
+    req.params.noteId
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Note is no longer shared",
+    note,
+  });
+});
+
+// Public: no login needed, only the share link's id.
+export const getSharedNote = asyncHandler(async (req, res) => {
+  const note = await noteService.getSharedNote(req.params.shareId);
+
+  res.status(200).json({
+    success: true,
+    message: "Shared note retrieved successfully",
+    note,
+  });
+});
+
 export const searchNote = asyncHandler(async (req, res) => {
   const { query, ...page } = req.query;
   const { notes, total, nextCursor } = await noteService.searchNotes(

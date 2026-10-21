@@ -5,6 +5,8 @@ import {
   editNote,
   getAllNotes,
   searchNote,
+  shareNote,
+  stopSharingNote,
   updateNoteArchived,
   updateNoteColor,
   updateNotePinned,
@@ -30,29 +32,35 @@ router.post("/add", validate({ body: createNoteDto }), addNote);
 router.put(
   "/edit/:noteId",
   validate({ params: noteIdParamDto, body: updateNoteDto }),
-  editNote
+  editNote,
 );
 router.get("/all", validate({ query: listNotesDto }), getAllNotes);
 router.delete(
   "/delete/:noteId",
   validate({ params: noteIdParamDto }),
-  deleteNote
+  deleteNote,
 );
 router.put(
   "/update-note-pinned/:noteId",
   validate({ params: noteIdParamDto, body: updateNotePinnedDto }),
-  updateNotePinned
+  updateNotePinned,
 );
 router.put(
   "/update-note-archived/:noteId",
   validate({ params: noteIdParamDto, body: updateNoteArchivedDto }),
-  updateNoteArchived
+  updateNoteArchived,
 );
 router.put(
   "/update-note-color/:noteId",
   validate({ params: noteIdParamDto, body: updateNoteColorDto }),
-  updateNoteColor
+  updateNoteColor,
 );
 router.get("/search", validate({ query: searchNoteDto }), searchNote);
+router.put("/share/:noteId", validate({ params: noteIdParamDto }), shareNote);
+router.delete(
+  "/share/:noteId",
+  validate({ params: noteIdParamDto }),
+  stopSharingNote,
+);
 
 export default router;
