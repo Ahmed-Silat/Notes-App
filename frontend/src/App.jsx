@@ -3,7 +3,6 @@ import Home from "./pages/Home/Home";
 import Signup from "./pages/Signup/Signup";
 import Login from "./pages/Login/Login";
 import RouteTitleHandler from "./components/RouteTitle/RouteTitleHandler";
-import Reminders from "./pages/Reminders/Reminders";
 import Archive from "./pages/Archive/Archive";
 import Trash from "./pages/Trash/Trash";
 import NotFound from "./pages/NotFound/NotFound";
@@ -24,7 +23,6 @@ const App = () => {
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/reminders" element={<Reminders />} />
             <Route path="/archive" element={<Archive />} />
             <Route path="/trash" element={<Trash />} />
             <Route path="/settings" element={<Settings />} />
